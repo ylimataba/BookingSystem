@@ -18,7 +18,7 @@ class TestDatabase(unittest.TestCase):
             start_time = QtCore.QTime(x,0).toString("hh.mm")
             end_time = QtCore.QTime(x+1,0).toString("hh.mm")
             new_reservation = Reservation(date=date, start=start_time, end=end_time)
-            new_reservation.save(self.db.reservations)
+            self.db.reservations.save(new_reservation)
             added_reservations.append(new_reservation)
         reservations = self.db.reservations.get_all()
         for i in range(len(reservations)):

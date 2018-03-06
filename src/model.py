@@ -2,7 +2,7 @@ class Model():
     def __init__(self):
         self.ID = None
 
-    def save(self):
+    def get_data(self):
         pass
 
     def __lt__(self, other):

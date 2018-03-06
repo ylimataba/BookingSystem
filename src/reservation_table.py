@@ -7,18 +7,14 @@ class ReservationTable(Table):
         self.cursor.execute('CREATE TABLE IF NOT EXISTS reservations (reservationID INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, start TEXT, end TEXT)')
         self.connection.commit()
         
-    def insert(self, data):
+    def save(self, reservation):
         try:
-            self.cursor.execute('INSERT INTO reservations(date, start, end) VALUES (?,?,?)', data)
+            if reservation.ID:
+                self.cursor.execute('UPDATE reservations SET date=?, start=?, end=? WHERE reservationID=?', reservation.get_data())
+            else:
+                self.cursor.execute('INSERT INTO reservations(date, start, end) VALUES (?,?,?)', reservation.get_data())
             self.connection.commit()
-            return self.cursor.lastrowid
-        except Exception as e:
-            raise DatabaseError(str(e))
-
-    def update(self, data):
-        try:
-            self.cursor.execute('UPDATE reservations SET date=?, start=?, end=? WHERE reservationID=?', data)
-            self.connection.commit()
+            reservation.ID = self.cursor.lastrowid
         except Exception as e:
             raise DatabaseError(str(e))
 

@@ -106,5 +106,5 @@ class AddReservationGUI(QtWidgets.QDialog):
         start = self.start.time().toString("hh.mm")
         end = self.end.time().toString("hh.mm")
         reservation = Reservation(date=date, start=start, end=end)
-        reservation.save(self.database.reservations)
+        self.database.reservations.save(reservation)
         self.close()

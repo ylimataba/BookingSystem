@@ -19,13 +19,12 @@ class Reservation(Model):
             self.end = end
             #self.services = services
 
-    def save(self, reservations):
+    def get_data(self):
         if self.ID:
             data = (self.date, self.start, self.end, self.ID)
-            reservations.update(data)
         else:
             data = (self.date, self.start, self.end)
-            self.ID = reservations.insert(data)
+        return data
     
     def __str__(self):
         return "Reservation(ID: {0}, date: {1}, start: {2}, end: {3})".format(self.ID,self.date, self.start, self.end)
