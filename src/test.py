@@ -1,5 +1,5 @@
 import unittest
-import datetime
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from reservation import Reservation
 from database import Database
@@ -13,13 +13,14 @@ class TestDatabase(unittest.TestCase):
 
     def test_get_all_reservations(self):
         added_reservations = []
+        date = QtCore.QDate.currentDate().toString("yyyy-MM-dd")
         for x in range(8,19):
-            start_time = datetime.datetime(2018,2,28,x)
-            end_time = datetime.datetime(2018,2,28,x+1)
-            new_reservation = Reservation(ID=x-7, start=start_time, end=end_time)
-            new_reservation.save(self.db)
+            start_time = QtCore.QTime(x,0).toString("hh.mm")
+            end_time = QtCore.QTime(x+1,0).toString("hh.mm")
+            new_reservation = Reservation(date=date, start=start_time, end=end_time)
+            new_reservation.save(self.db.reservations)
             added_reservations.append(new_reservation)
-        reservations = self.db.get_all_reservations()
+        reservations = self.db.reservations.get_all()
         for i in range(len(reservations)):
             self.assertEqual(reservations[i], added_reservations[i])
 

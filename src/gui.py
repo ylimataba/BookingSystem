@@ -1,12 +1,14 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
+from reservation import Reservation
 
 class GUI(QtWidgets.QMainWindow):
     '''
     The class GUI handles the drawing of a RobotWorld and allows user to
     interact with it.
     '''
-    def __init__(self):
+    def __init__(self, database):
         super().__init__()
+        self.database = database
         self.setCentralWidget(QtWidgets.QWidget()) # QMainWindown must have a centralWidget to be able to add layouts
         self.horizontal = QtWidgets.QHBoxLayout() # Horizontal main layout
         self.centralWidget().setLayout(self.horizontal)
@@ -28,7 +30,8 @@ class GUI(QtWidgets.QMainWindow):
         self.buttons.setLayout(layout)
 
         self.reservation = QtWidgets.QPushButton("Uusi varaus")
-        #self.next_turn_btn.clicked.connect(self.world.next_full_turn)
+        self.dialog = AddReservationGUI(self)
+        self.reservation.clicked.connect(self.dialog.show)
         layout.addWidget(self.reservation)
 
         self.service = QtWidgets.QPushButton("Muokkaa palveluja")
@@ -64,3 +67,44 @@ class GUI(QtWidgets.QMainWindow):
         self.view.adjustSize()
         self.view.show()
         self.horizontal.addWidget(self.view)
+
+class AddReservationGUI(QtWidgets.QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.database = parent.database
+        layout = QtWidgets.QVBoxLayout()
+
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+        self.create_form_group_box()
+
+        layout.addWidget(self.form_group_box)
+        layout.addWidget(buttonBox)
+        self.setLayout(layout)
+
+    def create_form_group_box(self):
+        self.form_group_box = QtWidgets.QGroupBox()
+        layout = QtWidgets.QFormLayout()
+        self.dateEdit = QtWidgets.QDateEdit(QtCore.QDate.currentDate())
+        self.dateEdit.setDisplayFormat("d.M.yyyy");
+        self.dateEdit.setCalendarPopup(True)
+
+        self.start = QtWidgets.QTimeEdit(QtCore.QTime.currentTime())
+        self.end = QtWidgets.QTimeEdit(QtCore.QTime.currentTime().addSecs(3600))
+        self.start.setDisplayFormat("HH:mm")
+        self.end.setDisplayFormat("HH:mm")
+
+        layout.addRow(QtWidgets.QLabel('Reservation date'), self.dateEdit);
+        layout.addRow(QtWidgets.QLabel('Start time'), self.start)
+        layout.addRow(QtWidgets.QLabel('End time'), self.end)
+        self.form_group_box.setLayout(layout);
+        
+    def accept(self):
+        date = self.dateEdit.date().toString("yyyy-MM-dd")
+        start = self.start.time().toString("hh.mm")
+        end = self.end.time().toString("hh.mm")
+        reservation = Reservation(date=date, start=start, end=end)
+        reservation.save(self.database.reservations)
+        self.close()
