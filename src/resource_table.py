@@ -8,15 +8,13 @@ class ResourceTable(Table):
         self.connection.commit()
         
     def save(self, resource):
-        try:
-            if resource.ID:
-                self.cursor.execute('UPDATE resources SET name=?, type=? WHERE resourceID=?', reservation.get_data())
-            else:
-                self.cursor.execute('INSERT INTO reservations(name, type) VALUES (?,?)', reservation.get_data())
+        if resource.ID:
+            self.cursor.execute('UPDATE resources SET name=?, type=? WHERE resourceID=?', resource.get_data())
+            self.connection.commit()
+        else:
+            self.cursor.execute('INSERT INTO resources(name, type) VALUES (?,?)', resource.get_data())
             self.connection.commit()
             resource.ID = self.cursor.lastrowid
-        except Exception as e:
-            raise DatabaseError(str(e))
 
     def get_all(self):
         resources = []
@@ -25,6 +23,11 @@ class ResourceTable(Table):
         for row in rows:
             resources.append(Resource(row=row))
         return resources
+
+    def get_by_id(self, ID):
+        self.cursor.execute('SELECT * FROM resources WHERE resourceID=?', (ID,))
+        resource = Resource(row=self.cursor.fetchone())
+        return resource
 
     def reset(self):
         self.cursor.execute('DROP TABLE IF EXISTS resources')
