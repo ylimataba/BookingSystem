@@ -1,5 +1,5 @@
 from table import Table
-from reservation import Reservation
+from models import Reservation
 
 class ReservationTable(Table):
     def __init__(self, connection):

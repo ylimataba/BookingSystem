@@ -1,13 +1,11 @@
 import sys
-import datetime
 from PyQt5.QtWidgets import QApplication
 
 from gui import GUI
 from database import Database
-from reservation import Reservation
 
 def main():
-    database = Database('database.db')
+    database = Database()
     # Every Qt application must have one instance of QApplication.
     global app # Use global to prevent crashing on exit
     app = QApplication(sys.argv)

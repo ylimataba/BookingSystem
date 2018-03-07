@@ -3,13 +3,10 @@ class Table:
         self.connection = connection
         self.cursor = self.connection.cursor()
 
-    def insert(self, data):
+    def save(self, objct):
         pass
 
-    def update(self, data):
-        pass
-
-    def get_all(self, data):
+    def get_all(self):
         pass
 
     def reset(self):

@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from reservation import Reservation
+from models import Reservation
 
 class GUI(QtWidgets.QMainWindow):
     '''
