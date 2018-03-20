@@ -16,13 +16,6 @@ class GUI(QtWidgets.QMainWindow):
         self.init_buttons()
         self.add_reservation_view()
 
-        '''
-        # Set a timer to call the update function periodically
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.add_reservation_view)
-        self.timer.start(10) # Milliseconds
-        '''
-
     def init_buttons(self):
         '''
         Adds buttons to the window and connects them to their respective functions
@@ -48,7 +41,8 @@ class GUI(QtWidgets.QMainWindow):
         '''
         Sets up the window.
         '''
-        #self.setGeometry(300, 300, 800, 800)
+        screen = QtWidgets.QDesktopWidget().screenGeometry()
+        self.setGeometry(screen)
         self.setWindowTitle('Varausjärjestelmä')
         self.show()
 
@@ -130,10 +124,11 @@ class AddReservation(QtWidgets.QDialog):
     def accept(self):
         resource = next(x for x in self.resources if x.name==self.combo.currentText())
         date = self.dateEdit.date()
-        start = self.start.time()
-        end = self.end.time()
-        reservation = Reservation(resource=resource, date=date, start=start, end=end)
-        self.database.save(reservation)
+        start = QtCore.QDateTime(date, self.start.time())
+        end = QtCore.QDateTime(date, self.end.time())
+        reservation = self.database.new_reservation(resource=resource, start=start, end=end)
+        if not reservation:
+            print('Failed to create reservation')
         self.close()
 
 class AddResource(QtWidgets.QDialog):
@@ -181,13 +176,4 @@ class MyView(QtWidgets.QGraphicsView):
     def resizeEvent(self, event):
         self.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
         super().resizeEvent(event)
-
-
-class MyCalendar(QtWidgets.QCalendarWidget):
-    def __init__(self, database):
-        super().__init__()
-        self.database = database
-
-    def selectionChanged(self):
-        reservations = self.database.get_reservations(date=self.selectedDate().toString('yyyy-MM-dd'))
 

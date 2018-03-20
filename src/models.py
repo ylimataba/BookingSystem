@@ -22,37 +22,33 @@ class Reservation(Model):
         #self.services = services
         if row:
             self.ID = row[0]
-            self.date = QtCore.QDate.fromString(row[2], 'yyyy-MM-dd')
-            self.start = QtCore.QTime.fromString(row[3], 'hh.mm')
-            self.end = QtCore.QTime.fromString(row[4], 'hh.mm')
+            self.start = QtCore.QDateTime.fromString(row[2], 'yyyy-MM-dd hh:mm')
+            self.end = QtCore.QDateTime.fromString(row[3], 'yyyy-MM-dd hh:mm')
         else:
             self.ID = ID
-            self.date = date
             self.start = start
             self.end = end
 
     def get_data(self):
         if self.ID:
-            data = (self.resource.ID, self.date.toString('yyyy-MM-dd'), self.start.toString('hh.mm'), self.end.toString('hh.mm'), self.ID)
+            data = (self.resource.ID, self.start.toString('yyyy-MM-dd hh:mm'), self.end.toString('yyyy-MM-dd hh:mm'), self.ID)
         else:
-            data = (self.resource.ID, self.date.toString('yyyy-MM-dd'), self.start.toString('hh.mm'), self.end.toString('hh.mm'))
+            data = (self.resource.ID, self.start.toString('yyyy-MM-dd hh:mm'), self.end.toString('yyyy-MM-dd hh:mm'))
         return data
 
     def to_html(self):
-        return "{0}<br>{1}<br>{2} - {3}".format(
+        return "{0}<br>{1} - {2}".format(
                 self.resource.name,
-                self.date.toString('dd.MM.yyyy'),
-                self.start.toString('hh.mm'),
-                self.end.toString('hh.mm'))
+                self.start.toString('yyyy-MM-dd hh:mm'),
+                self.end.toString('yyyy-MM-dd hh:mm'))
 
     
     def __str__(self):
-        return "Reservation(ID: {0}, resourceID: {1}, date: {2}, start: {3}, end: {4})".format(
+        return "Reservation(ID: {0}, resourceID: {1}, start: {2}, end: {3})".format(
                 self.ID,
                 self.resource.ID,
-                self.date.toString('yyyy-MM-dd'),
-                self.start.toString('hh.mm'),
-                self.end.toString('hh.mm'))
+                self.start.toString('yyyy-MM-dd hh:mm'),
+                self.end.toString('yyyy-MM-dd hh:mm'))
 
 class Resource(Model):
     def __init__(self, ID=None, name=None, resource_type=None, row=None):

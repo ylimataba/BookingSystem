@@ -13,9 +13,10 @@ class Database:
         except Exception as e:
             raise DatabaseError(str(e))
 
-    def new_reservation(self, resource, date, start, end):
-        if self.resources.is_free(resource.ID, date.toString('yyyy-MM-dd'), start.toString('hh.mm'), end.toString('hh.mm')):
-            reservation = Reservation(resource=resource,date=date,start=start,end=end)
+    def new_reservation(self, resource, start, end):
+        if self.resources.is_free(resource.ID, start.toString('yyyy-MM-dd hh:mm'), end.toString('yyyy-MM-dd hh:mm')):
+            reservation = Reservation(resource=resource,start=start,end=end)
+            self.save(reservation)
             return reservation
         else:
             return None

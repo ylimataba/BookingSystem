@@ -7,7 +7,6 @@ class ReservationTable(Table):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS reservations (
                 reservationID INTEGER PRIMARY KEY AUTOINCREMENT,
                 resource INT,
-                date TEXT,
                 start TEXT,
                 end TEXT,
                 FOREIGN KEY(resource) REFERENCES resources(resourceID))''')
@@ -15,10 +14,10 @@ class ReservationTable(Table):
         
     def save(self, reservation):
         if reservation.ID:
-            self.cursor.execute('UPDATE reservations SET resource=?, date=?, start=?, end=? WHERE reservationID=?', reservation.get_data())
+            self.cursor.execute('UPDATE reservations SET resource=?, start=?, end=? WHERE reservationID=?', reservation.get_data())
             self.connection.commit()
         else:
-            self.cursor.execute('INSERT INTO reservations(resource, date, start, end) VALUES (?,?,?,?)', reservation.get_data())
+            self.cursor.execute('INSERT INTO reservations(resource, start, end) VALUES (?,?,?)', reservation.get_data())
             self.connection.commit()
             reservation.ID = self.cursor.lastrowid
 
@@ -28,7 +27,7 @@ class ReservationTable(Table):
         return rows
 
     def get_by_date(self, date):
-        self.cursor.execute('SELECT * FROM reservations WHERE date=?', (date,))
+        self.cursor.execute('SELECT * FROM reservations WHERE ? BETWEEN date(start) and date(end)', (date,))
         rows = self.cursor.fetchall()
         return rows
 
