@@ -27,6 +27,11 @@ class ReservationTable(Table):
         rows = self.cursor.fetchall()
         return rows
 
+    def get_by_date(self, date):
+        self.cursor.execute('SELECT * FROM reservations WHERE date=?', (date,))
+        rows = self.cursor.fetchall()
+        return rows
+
     def reset(self):
         self.cursor.execute('DROP TABLE IF EXISTS reservations')
         self.connection.commit()

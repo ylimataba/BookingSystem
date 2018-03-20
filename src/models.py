@@ -37,6 +37,14 @@ class Reservation(Model):
         else:
             data = (self.resource.ID, self.date.toString('yyyy-MM-dd'), self.start.toString('hh.mm'), self.end.toString('hh.mm'))
         return data
+
+    def to_html(self):
+        return "{0}<br>{1}<br>{2} - {3}".format(
+                self.resource.name,
+                self.date.toString('dd.MM.yyyy'),
+                self.start.toString('hh.mm'),
+                self.end.toString('hh.mm'))
+
     
     def __str__(self):
         return "Reservation(ID: {0}, resourceID: {1}, date: {2}, start: {3}, end: {4})".format(

@@ -29,6 +29,17 @@ class ResourceTable(Table):
         resource = Resource(row=self.cursor.fetchone())
         return resource
 
+    def is_free(self, resourceID, date, start, end):
+        self.cursor.execute('''SELECT resource FROM reservations
+                WHERE resource=? AND date=?
+                AND (start BETWEEN ? AND ?
+                OR end BETWEEN ? AND ?)''',
+                (resourceID,date,start,end,start,end))
+        rows = self.cursor.fetchall()
+        if len(rows) > 0:
+            return False
+        return True
+
     def reset(self):
         self.cursor.execute('DROP TABLE IF EXISTS resources')
         self.connection.commit()

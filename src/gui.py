@@ -14,11 +14,14 @@ class GUI(QtWidgets.QMainWindow):
         self.centralWidget().setLayout(self.horizontal)
         self.init_window()
         self.init_buttons()
+        self.add_reservation_view()
 
+        '''
         # Set a timer to call the update function periodically
         self.timer = QtCore.QTimer()
-        #self.timer.timeout.connect(self.update_robots)
+        self.timer.timeout.connect(self.add_reservation_view)
         self.timer.start(10) # Milliseconds
+        '''
 
     def init_buttons(self):
         '''
@@ -45,19 +48,40 @@ class GUI(QtWidgets.QMainWindow):
         '''
         Sets up the window.
         '''
-        self.setGeometry(300, 300, 800, 800)
+        #self.setGeometry(300, 300, 800, 800)
         self.setWindowTitle('Varausjärjestelmä')
         self.show()
 
         # Add a scene for drawing 2d objects
         self.scene = QtWidgets.QGraphicsScene()
-        self.scene.setSceneRect(0, 0, 700, 700)
+        #self.scene.setSceneRect(0, 0, 700, 700)
 
         # Add a view for showing the scene
-        self.view = QtWidgets.QGraphicsView(self.scene, self)
+        #self.view = QtWidgets.QGraphicsView(self.scene, self)
+        self.view = MyView(self.scene, self)
         self.view.adjustSize()
         self.view.show()
         self.horizontal.addWidget(self.view)
+
+        self.calendar = QtWidgets.QCalendarWidget()
+        self.calendar.selectionChanged.connect(self.add_reservation_view)
+        self.horizontal.addWidget(self.calendar)
+
+    def add_reservation_view(self):
+        i = 0
+        reservations = self.database.get_reservations(date=self.calendar.selectedDate().toString('yyyy-MM-dd'))
+        resources = self.database.resources.get_all()
+        self.scene.clear()
+        width = self.view.width() / max(len(resources),1)
+        height = self.view.height() / max(len(reservations),1)
+        for reservation in reservations:
+            #rect = QtWidgets.QGraphicsRectItem(width*i,0,width,height)
+            text = QtWidgets.QGraphicsTextItem()
+            text.setHtml(reservation.to_html())
+            text.setPos(0,i*height)
+            self.scene.addItem(text)
+            i += 1
+        #self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def add_reservation(self):
         self.reservation_dialog = AddReservation(self)
@@ -145,3 +169,25 @@ class AddResource(QtWidgets.QDialog):
         resource = Resource(name=name, resource_type=resource_type)
         self.database.save(resource)
         self.close()
+
+
+class MyView(QtWidgets.QGraphicsView):
+    def __init__(self, scene, parent):
+        super().__init__(scene, parent)
+        self.scene = scene
+        #self.setMinimumHeight(500)
+        #self.setMinimumWidth(500)
+    
+    def resizeEvent(self, event):
+        self.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        super().resizeEvent(event)
+
+
+class MyCalendar(QtWidgets.QCalendarWidget):
+    def __init__(self, database):
+        super().__init__()
+        self.database = database
+
+    def selectionChanged(self):
+        reservations = self.database.get_reservations(date=self.selectedDate().toString('yyyy-MM-dd'))
+

@@ -47,7 +47,22 @@ class TestDatabase(unittest.TestCase):
         for i in range(len(reservations)):
             self.assertEqual(reservations[i], added_reservations[i])
 
-
+    def test_is_free(self):
+        resource = Resource(name="Resource1", resource_type="ROOM")
+        date = QtCore.QDate(2018,3,8)
+        start = QtCore.QTime(10,0)
+        end = QtCore.QTime(11,0)
+        reservation = Reservation(resource=resource, date=date, start=start, end=end)
+        self.db.save(reservation)
+        self.assertEqual(self.db.resources.is_free(2,'2018-03-08','10.00','11.00'), True)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-07','10.00','11.00'), True)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08','09.00','09.59'), True)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08','11.01','12.00'), True)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08','10.00','11.00'), False)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08','09.00','11.00'), False)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08','09.00','10.30'), False)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08','10.30','12.00'), False)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08','09.00','14.00'), False)
 
 
 if __name__ == '__main__':
