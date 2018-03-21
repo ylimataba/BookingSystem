@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from models import Reservation, Resource
+from reservation_graphics_item import ReservationGraphicsItem
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -8,6 +9,7 @@ class GUI(QtWidgets.QMainWindow):
     '''
     def __init__(self, database):
         super().__init__()
+        self.screen = QtWidgets.QDesktopWidget().screenGeometry()
         self.database = database
         self.setCentralWidget(QtWidgets.QWidget()) # QMainWindown must have a centralWidget to be able to add layouts
         self.horizontal = QtWidgets.QHBoxLayout() # Horizontal main layout
@@ -33,6 +35,11 @@ class GUI(QtWidgets.QMainWindow):
         self.resource.clicked.connect(self.add_resource)
         layout.addWidget(self.resource)
 
+        self.calendar = QtWidgets.QCalendarWidget()
+        self.calendar.setMaximumWidth(self.screen.width() * 0.2)
+        self.calendar.selectionChanged.connect(self.add_reservation_view)
+        layout.addWidget(self.calendar)
+
         layout.setAlignment(QtCore.Qt.AlignTop)
 
         self.horizontal.addWidget(self.buttons)
@@ -42,13 +49,13 @@ class GUI(QtWidgets.QMainWindow):
         Sets up the window.
         '''
         screen = QtWidgets.QDesktopWidget().screenGeometry()
-        self.setGeometry(screen)
+        #self.setGeometry(screen)
         self.setWindowTitle('Varausjärjestelmä')
         self.show()
 
         # Add a scene for drawing 2d objects
         self.scene = QtWidgets.QGraphicsScene()
-        #self.scene.setSceneRect(0, 0, 700, 700)
+        #self.scene.setSceneRect(0, 0, 0.8*screen.width(), 1.5*screen.height())
 
         # Add a view for showing the scene
         #self.view = QtWidgets.QGraphicsView(self.scene, self)
@@ -57,25 +64,38 @@ class GUI(QtWidgets.QMainWindow):
         self.view.show()
         self.horizontal.addWidget(self.view)
 
-        self.calendar = QtWidgets.QCalendarWidget()
-        self.calendar.selectionChanged.connect(self.add_reservation_view)
-        self.horizontal.addWidget(self.calendar)
+    def draw_hour_lines(self, width, height):
+        for i in range(24):
+            line = QtWidgets.QGraphicsLineItem(0, i*height, width, i*height)
+            text = QtWidgets.QGraphicsSimpleTextItem(str(i))
+            text.setPos(0, i*height)
+            self.scene.addItem(line)
+            self.scene.addItem(text)
 
     def add_reservation_view(self):
-        i = 0
         reservations = self.database.get_reservations(date=self.calendar.selectedDate().toString('yyyy-MM-dd'))
         resources = self.database.resources.get_all()
         self.scene.clear()
-        width = self.view.width() / max(len(resources),1)
-        height = self.view.height() / max(len(reservations),1)
+        width = self.screen.width() / min(5, max(len(resources),1))
+        height = self.screen.height() / 12
+        self.draw_hour_lines(width*len(resources), height)
         for reservation in reservations:
-            #rect = QtWidgets.QGraphicsRectItem(width*i,0,width,height)
+            item = ReservationGraphicsItem(reservation, width, height)
+            self.scene.addItem(item)
+            '''
+            x = resources.index(reservation.resource)
+            y = (reservation.start.time().hour() * 3600 + reservation.start.time().minute() * 60) / 3600
+            duration = reservation.start.secsTo(reservation.end) / 3600
+            rect = QtWidgets.QGraphicsRectItem(x*width +30, y*height, width, duration*height)
             text = QtWidgets.QGraphicsTextItem()
             text.setHtml(reservation.to_html())
-            text.setPos(0,i*height)
+            text.setPos(x*width +30,y*height)
+            color = QtGui.QColor(QtCore.Qt.blue)
+            brush = QtGui.QBrush(color)
+            rect.setBrush(brush)
+            self.scene.addItem(rect)
             self.scene.addItem(text)
-            i += 1
-        #self.view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+            '''
 
     def add_reservation(self):
         self.reservation_dialog = AddReservation(self)
@@ -170,10 +190,9 @@ class MyView(QtWidgets.QGraphicsView):
     def __init__(self, scene, parent):
         super().__init__(scene, parent)
         self.scene = scene
-        #self.setMinimumHeight(500)
-        #self.setMinimumWidth(500)
+        self.setMinimumWidth(0.5*parent.screen.width())
     
     def resizeEvent(self, event):
-        self.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        #self.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
         super().resizeEvent(event)
 
