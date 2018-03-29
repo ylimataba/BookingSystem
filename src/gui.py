@@ -80,9 +80,8 @@ class GUI(QtWidgets.QMainWindow):
         height = self.screen.height() / 12
         self.draw_hour_lines(width*len(resources), height)
         for reservation in reservations:
-            item = ReservationGraphicsItem(reservation, width, height)
-            self.scene.addItem(item)
-            '''
+            #item = ReservationGraphicsItem(reservation, width, height)
+            #self.scene.addItem(item)
             x = resources.index(reservation.resource)
             y = (reservation.start.time().hour() * 3600 + reservation.start.time().minute() * 60) / 3600
             duration = reservation.start.secsTo(reservation.end) / 3600
@@ -95,7 +94,6 @@ class GUI(QtWidgets.QMainWindow):
             rect.setBrush(brush)
             self.scene.addItem(rect)
             self.scene.addItem(text)
-            '''
 
     def add_reservation(self):
         self.reservation_dialog = AddReservation(self)
