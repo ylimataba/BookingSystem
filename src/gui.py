@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from models import Reservation, Resource
-from reservation_graphics_item import ReservationGraphicsItem
+#from reservation_graphics_item import ReservationGraphicsItem
 
 class GUI(QtWidgets.QMainWindow):
     '''
