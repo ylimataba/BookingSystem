@@ -5,8 +5,6 @@
 * Resurssien lisäys
 * Varausten katselu valittuna päivänä
 
----
-
 ## Käyttöohje
 * Ohjelman voi ajaa komennolla `python main.py`
 * Ohjelmalla voi lisätä resursseja ja varauksia sekä katsella tehtyjä varauksia
@@ -17,4 +15,4 @@
 * Uskon kuitenkin, että gui:n työstäminen on nopeampaa projektin edetessä.
 
 ## Muuta
-En ole joutunut suurempia muutoksia tekemään suunnitelmaan. Muutamia ohjelmakoodin rakenteellisia muutoksia olen tehnyt koska olen kokenut, että luokkajako on parempi näin.
+* En ole joutunut suurempia muutoksia tekemään suunnitelmaan. Muutamia ohjelmakoodin rakenteellisia muutoksia olen tehnyt koska olen kokenut, että luokkajako on parempi näin.
