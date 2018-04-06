@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from models import Reservation, Resource
-#from reservation_graphics_item import ReservationGraphicsItem
+from reservation_graphics_item import ReservationGraphicsItem
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -76,24 +76,13 @@ class GUI(QtWidgets.QMainWindow):
         reservations = self.database.get_reservations(date=self.calendar.selectedDate().toString('yyyy-MM-dd'))
         resources = self.database.resources.get_all()
         self.scene.clear()
-        width = self.screen.width() / min(5, max(len(resources),1))
+        offset = 30
+        width = (self.screen.width() - offset) / min(5, max(len(resources),1))
         height = self.screen.height() / 12
-        self.draw_hour_lines(width*len(resources), height)
+        self.draw_hour_lines(self.screen.width(), height)
         for reservation in reservations:
-            #item = ReservationGraphicsItem(reservation, width, height)
-            #self.scene.addItem(item)
-            x = resources.index(reservation.resource)
-            y = (reservation.start.time().hour() * 3600 + reservation.start.time().minute() * 60) / 3600
-            duration = reservation.start.secsTo(reservation.end) / 3600
-            rect = QtWidgets.QGraphicsRectItem(x*width +30, y*height, width, duration*height)
-            text = QtWidgets.QGraphicsTextItem()
-            text.setHtml(reservation.to_html())
-            text.setPos(x*width +30,y*height)
-            color = QtGui.QColor(QtCore.Qt.blue)
-            brush = QtGui.QBrush(color)
-            rect.setBrush(brush)
-            self.scene.addItem(rect)
-            self.scene.addItem(text)
+            item = ReservationGraphicsItem(reservation, width, height, offset)
+            self.scene.addItem(item)
 
     def add_reservation(self):
         self.reservation_dialog = AddReservation(self)
