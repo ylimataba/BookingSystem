@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from models import Reservation, Resource
 from reservation_graphics_item import ReservationGraphicsItem
+from hour_row_graphics_item import HourRowGraphicsItem
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -67,10 +68,7 @@ class GUI(QtWidgets.QMainWindow):
     def draw_hour_lines(self, width, height):
         for i in range(24):
             line = QtWidgets.QGraphicsLineItem(0, i*height, width, i*height)
-            text = QtWidgets.QGraphicsSimpleTextItem(str(i))
-            text.setPos(0, i*height)
             self.scene.addItem(line)
-            self.scene.addItem(text)
 
     def add_reservation_view(self):
         reservations = self.database.get_reservations(date=self.calendar.selectedDate().toString('yyyy-MM-dd'))
@@ -79,10 +77,12 @@ class GUI(QtWidgets.QMainWindow):
         offset = 30
         width = (self.screen.width() - offset) / min(5, max(len(resources),1))
         height = self.screen.height() / 12
+        hours = HourRowGraphicsItem(offset-15, self.screen.height() *2)
         self.draw_hour_lines(self.screen.width(), height)
         for reservation in reservations:
             item = ReservationGraphicsItem(reservation, width, height, offset)
             self.scene.addItem(item)
+        self.scene.addItem(hours)
 
     def add_reservation(self):
         self.reservation_dialog = AddReservation(self)
@@ -178,8 +178,10 @@ class MyView(QtWidgets.QGraphicsView):
         super().__init__(scene, parent)
         self.scene = scene
         self.setMinimumWidth(0.5*parent.screen.width())
-    
-    def resizeEvent(self, event):
-        #self.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
-        super().resizeEvent(event)
-
+   
+    def scrollContentsBy(self, dx, dy):
+        super().scrollContentsBy(dx, dy)
+        for item in self.scene.items():
+            if isinstance(item, HourRowGraphicsItem):
+                scenePos = self.mapToScene(0, 0)
+                item.setPos(scenePos.x(), item.y())
