@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from models import Reservation, Resource
 from reservation_graphics_item import ReservationGraphicsItem
 from hour_row_graphics_item import HourRowGraphicsItem
+from column_header_graphics_item import ColumnHeaderGraphicsItem
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -65,24 +66,27 @@ class GUI(QtWidgets.QMainWindow):
         self.view.show()
         self.horizontal.addWidget(self.view)
 
-    def draw_hour_lines(self, width, height):
+    def draw_hour_lines(self, width, height,offset):
         for i in range(24):
-            line = QtWidgets.QGraphicsLineItem(0, i*height, width, i*height)
+            line = QtWidgets.QGraphicsLineItem(0, i*height+offset, width, i*height+offset)
             self.scene.addItem(line)
 
     def add_reservation_view(self):
-        reservations = self.database.get_reservations(date=self.calendar.selectedDate().toString('yyyy-MM-dd'))
+        date = self.calendar.selectedDate()
+        reservations = self.database.get_reservations(date=date.toString('yyyy-MM-dd'))
         resources = self.database.resources.get_all()
         self.scene.clear()
         offset = 30
         width = (self.screen.width() - offset) / min(5, max(len(resources),1))
         height = self.screen.height() / 12
-        hours = HourRowGraphicsItem(offset-15, self.screen.height() *2)
-        self.draw_hour_lines(self.screen.width(), height)
+        hours = HourRowGraphicsItem(offset-15, self.screen.height() *2, offset)
+        headers = ColumnHeaderGraphicsItem(self.screen.width(), offset-5, resources, offset)
+        self.draw_hour_lines(self.screen.width(), height, offset)
         for reservation in reservations:
-            item = ReservationGraphicsItem(reservation, width, height, offset)
+            item = ReservationGraphicsItem(reservation, width, height, offset, date)
             self.scene.addItem(item)
         self.scene.addItem(hours)
+        self.scene.addItem(headers)
 
     def add_reservation(self):
         self.reservation_dialog = AddReservation(self)
@@ -182,6 +186,8 @@ class MyView(QtWidgets.QGraphicsView):
     def scrollContentsBy(self, dx, dy):
         super().scrollContentsBy(dx, dy)
         for item in self.scene.items():
+            scenePos = self.mapToScene(0, 0)
             if isinstance(item, HourRowGraphicsItem):
-                scenePos = self.mapToScene(0, 0)
                 item.setPos(scenePos.x(), item.y())
+            elif isinstance(item, ColumnHeaderGraphicsItem):
+                item.setPos(item.x(), scenePos.y())
