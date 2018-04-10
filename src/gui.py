@@ -37,7 +37,8 @@ class GUI(QtWidgets.QMainWindow):
         self.resource.clicked.connect(self.add_resource)
         layout.addWidget(self.resource)
 
-        self.calendar = QtWidgets.QCalendarWidget()
+        #self.calendar = QtWidgets.QCalendarWidget()
+        self.calendar = MyCalendar(self.database)
         self.calendar.setMaximumWidth(self.screen.width() * 0.2)
         self.calendar.selectionChanged.connect(self.add_reservation_view)
         layout.addWidget(self.calendar)
@@ -66,27 +67,33 @@ class GUI(QtWidgets.QMainWindow):
         self.view.show()
         self.horizontal.addWidget(self.view)
 
-    def draw_hour_lines(self, width, height,offset):
-        for i in range(24):
+    def draw_hour_lines(self, width, height, offset, number_of_lines):
+        for i in range(number_of_lines):
             line = QtWidgets.QGraphicsLineItem(0, i*height+offset, width, i*height+offset)
             self.scene.addItem(line)
 
     def add_reservation_view(self):
-        date = self.calendar.selectedDate()
-        reservations = self.database.get_reservations(date=date.toString('yyyy-MM-dd'))
-        resources = self.database.resources.get_all()
         self.scene.clear()
-        offset = 30
-        width = (self.screen.width() - offset) / min(5, max(len(resources),1))
-        height = self.screen.height() / 12
-        hours = HourRowGraphicsItem(offset-15, self.screen.height() *2, offset)
-        headers = ColumnHeaderGraphicsItem(self.screen.width(), offset-5, resources, offset)
-        self.draw_hour_lines(self.screen.width(), height, offset)
-        for reservation in reservations:
-            item = ReservationGraphicsItem(reservation, width, height, offset, date)
-            self.scene.addItem(item)
-        self.scene.addItem(hours)
-        self.scene.addItem(headers)
+        date = self.calendar.selectedDate()
+        reservations = self.database.get_reservations(date=date)
+        if reservations:
+            (start, end) = self.database.get_start_and_end(date)
+            number_of_lines = end - start
+            resources = self.database.resources.get_all()
+            offset = 30
+            width = (self.screen.width() - offset) / min(5, max(len(resources),1))
+            height = self.screen.height() / 12
+            hours = HourRowGraphicsItem(offset-15, height * number_of_lines, offset, start, end)
+            headers = ColumnHeaderGraphicsItem(self.screen.width(), offset-5, resources, offset)
+            self.draw_hour_lines(self.screen.width(), height, offset, number_of_lines)
+            for reservation in reservations:
+                item = ReservationGraphicsItem(reservation, width, height, offset, date, start)
+                self.scene.addItem(item)
+            self.scene.addItem(hours)
+            self.scene.addItem(headers)
+        else:
+            text = QtWidgets.QGraphicsSimpleTextItem("No reservations for selected date")
+            self.scene.addItem(text)
 
     def add_reservation(self):
         self.reservation_dialog = AddReservation(self)
@@ -191,3 +198,24 @@ class MyView(QtWidgets.QGraphicsView):
                 item.setPos(scenePos.x(), item.y())
             elif isinstance(item, ColumnHeaderGraphicsItem):
                 item.setPos(item.x(), scenePos.y())
+
+class MyCalendar(QtWidgets.QCalendarWidget):
+    def __init__(self, database):
+        super().__init__()
+        self.database = database
+
+    def paintCell(self, painter, rect, date):
+        reservations = self.database.get_reservations(date=date)
+        if reservations and self.selectedDate() != date:
+            painter.save()
+            painter.setPen(QtCore.Qt.white)
+            painter.setBrush(QtGui.QColor(152, 251, 152))
+            painter.drawRect(rect)
+            if date.dayOfWeek() > 5:
+                painter.setPen(QtCore.Qt.red)
+            else:
+                painter.setPen(QtCore.Qt.black)
+            painter.drawText(rect, QtCore.Qt.AlignCenter, str(date.day()))
+            painter.restore()
+        else:
+            super().paintCell(painter, rect, date)

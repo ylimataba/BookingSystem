@@ -27,7 +27,7 @@ class ReservationTable(Table):
         return rows
 
     def get_by_date(self, date):
-        self.cursor.execute('SELECT * FROM reservations WHERE ? BETWEEN date(start) and date(end)', (date,))
+        self.cursor.execute('SELECT * FROM reservations WHERE ? BETWEEN date(start) and date(end) ORDER BY start', (date,))
         rows = self.cursor.fetchall()
         return rows
 

@@ -25,7 +25,7 @@ class Database:
         try:
             reservations = []
             if date:
-                reservation_rows = self.reservations.get_by_date(date)
+                reservation_rows = self.reservations.get_by_date(date.toString('yyyy-MM-dd'))
             else:
                 reservation_rows = self.reservations.get_all()
             for row in reservation_rows:
@@ -41,6 +41,19 @@ class Database:
                 return self.resources.get_by_id(ID)
             else:
                 return self.resources.get_all()
+        except Exception as e:
+            raise DatabaseError(str(e))
+    
+    def get_start_and_end(self, date):
+        try:
+            reservations = self.get_reservations(date=date)
+            if reservations:
+                start = reservations[0].get_start_time_on_date(date)
+                reservations.sort(key=lambda x: x.get_end_time_on_date(date), reverse=True)
+                end = reservations[0].get_end_time_on_date(date)
+                return (int(start // 1), int(-(-end // 1) +1))
+            else:
+                return (None, None)
         except Exception as e:
             raise DatabaseError(str(e))
 

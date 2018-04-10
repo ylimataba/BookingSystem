@@ -48,13 +48,16 @@ class Reservation(Model):
             return msecs / 3600000
         else:
             return 0
+
+    def get_end_time_on_date(self, date):
+        if self.end.date() == date:
+            msecs = self.end.time().msecsSinceStartOfDay()
+            return msecs / 3600000
+        else:
+            return 24
     
     def get_duration_on_date(self, date):
-        if self.end.date() == date:
-            end = self.end.time().msecsSinceStartOfDay() / 3600000
-            return end - self.get_start_time_on_date(date)
-        else:
-            return 24 - self.get_start_time_on_date(date)
+        return self.get_end_time_on_date(date) - self.get_start_time_on_date(date)
     
     def __str__(self):
         return "Reservation(ID: {0}, resourceID: {1}, start: {2}, end: {3})".format(

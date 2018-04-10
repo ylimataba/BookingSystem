@@ -74,6 +74,21 @@ class TestDatabase(unittest.TestCase):
         added_reservations = []
         date = QtCore.QDate.currentDate()
         resource = Resource(name="Resource1", resource_type="ROOM")
+        for x in range(19,8):
+            start_time = QtCore.QTime(x,0)
+            end_time = QtCore.QTime(x-1,0)
+            start = QtCore.QDateTime(date,start_time)
+            end = QtCore.QDateTime(date, end_time)
+            new_reservation = Reservation(resource=resource, start=start, end=end)
+            self.db.save(new_reservation)
+            added_reservations.append(new_reservation)
+        reservations = self.db.get_reservations(date=date)
+        for i in range(len(reservations)):
+            self.assertEqual(reservations[len(reservations)-i-1], added_reservations[i])
+
+    def test_get_start_and_end(self):
+        date = QtCore.QDate.currentDate()
+        resource = Resource(name="Resource1", resource_type="ROOM")
         for x in range(8,19):
             start_time = QtCore.QTime(x,0)
             end_time = QtCore.QTime(x+1,0)
@@ -81,10 +96,11 @@ class TestDatabase(unittest.TestCase):
             end = QtCore.QDateTime(date, end_time)
             new_reservation = Reservation(resource=resource, start=start, end=end)
             self.db.save(new_reservation)
-            added_reservations.append(new_reservation)
-        reservations = self.db.get_reservations(date=date.toString('yyyy-MM-dd'))
-        for i in range(len(reservations)):
-            self.assertEqual(reservations[i], added_reservations[i])
+        (first, last) = self.db.get_start_and_end(date)
+        print(first, last)
+        self.assertEqual(first, 8)
+        self.assertEqual(last, 19)
+
 
 
 if __name__ == '__main__':

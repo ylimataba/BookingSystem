@@ -2,14 +2,14 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from models import Reservation, Resource
 
 class ReservationGraphicsItem(QtWidgets.QGraphicsItem):
-    def __init__(self, reservation, width, height, offset, date):
+    def __init__(self, reservation, width, height, offset, date, first):
         super().__init__()
         self.width = width
         self.height = height
         self.offset = offset
         self.reservation = reservation
         self.x = self.reservation.resource.ID - 1
-        self.y = self.reservation.get_start_time_on_date(date)
+        self.y = self.reservation.get_start_time_on_date(date) - first
         self.duration = self.reservation.get_duration_on_date(date)
         self.init_rect()
         self.init_text()
