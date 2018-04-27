@@ -2,6 +2,7 @@ import sqlite3
 from database_error import DatabaseError
 from reservation_table import ReservationTable
 from resource_table import ResourceTable
+from service_table import ServiceTable
 from models import Reservation, Resource
 
 class Database:
@@ -10,6 +11,8 @@ class Database:
             self.connection = sqlite3.connect(filename)
             self.resources = ResourceTable(self.connection)
             self.reservations = ReservationTable(self.connection)
+            self.services = ServiceTable(self.connection)
+            self.reservationservices = ReservationServiceTable(self.connection)
         except Exception as e:
             raise DatabaseError(str(e))
 
@@ -22,6 +25,7 @@ class Database:
                 reservation_rows = self.reservations.get_all()
             for row in reservation_rows:
                 resource = self.resources.get_by_id(row[1])
+                services = get_services(reservationID=row[0])
                 reservations.append(Reservation(row=row, resource=resource))
             return reservations
         except Exception as e:
@@ -33,6 +37,21 @@ class Database:
                 return self.resources.get_by_id(ID)
             else:
                 return self.resources.get_all()
+        except Exception as e:
+            raise DatabaseError(str(e))
+
+    def get_services(self, reservationID=None, ID=None):
+        try:
+            if reservationID:
+                services = []
+                service_id_rows = self.reservationservices.get_by_reservation_id(reservationID)
+                for row in service_id_rows:
+                    services.append(self.get_services(ID=row[0]))
+                return services
+            elif ID:
+                return self.services.get_by_id(ID)
+            else:
+                return self.services.get_all()
         except Exception as e:
             raise DatabaseError(str(e))
     
@@ -56,6 +75,8 @@ class Database:
                 return self.reservations.save(object_to_save)
             elif type(object_to_save) is Resource:
                 return self.resources.save(object_to_save)
+            elif type(object_to_save) is Service:
+                return self.services.save(object_to_save)
         except Exception as e:
             raise DatabaseError(str(e))
 
@@ -63,5 +84,6 @@ class Database:
         try:
             self.resources.reset()
             self.reservations.reset()
+            self.services.reset()
         except Exception as e:
             raise DatabaseError(str(e))

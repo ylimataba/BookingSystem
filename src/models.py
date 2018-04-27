@@ -19,7 +19,7 @@ class Reservation(Model):
         super().__init__()
         #self.customer = customer
         self.resource = resource
-        #self.services = services
+        self.services = services
         if row:
             self.ID = row[0]
             self.start = QtCore.QDateTime.fromString(row[2], 'yyyy-MM-dd hh:mm')
@@ -87,3 +87,28 @@ class Resource(Model):
     
     def __str__(self):
         return "Resource(ID: {0}, name: {1}, type: {2})".format(self.ID, self.name, self.resource_type)
+
+class Service(Model):
+    def __init__(self, ID=None, name=None, price=None, duration=None, description=None, row=None):
+        super().__init__()
+        if row:
+            self.ID = row[0]
+            self.name = row[1]
+            self.price = row[2]
+            self.duration = row[3]
+            self.description = row[4]
+        else:
+            self.ID = ID
+            self.name = name
+            self.price = price
+            self.duration = duration
+            self.description = description
+    
+    def get_data(self):
+        if self.ID:
+            data = (self.name, self.price, self.duration, self.description, self.ID)
+        else:
+            data = (self.name, self.price, self.duration, self.description)
+        return data
+
+
