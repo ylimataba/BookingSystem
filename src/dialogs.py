@@ -45,9 +45,12 @@ class ReservationDialog(QtWidgets.QDialog):
         self.form_group_box.setLayout(layout)
 
     def update(self):
-        self.end.setMinimumDateTime(self.start.dateTime().addSecs(60))
-        if self.end.dateTime() < self.end.minimumDateTime():
-            self.end.setDateTime(self.end.minimumDateTime())
+        minimumDateTime = self.start.dateTime().addSecs(60)
+        if self.end.date() < minimumDateTime.date():
+            self.end.setDate(minimumDateTime.date())
+            if self.end.dateTime() < minimumDateTime:
+                self.end.setDateTime(minimumDateTime)
+        self.end.setMinimumDateTime(minimumDateTime)
 
         
     def accept(self):
