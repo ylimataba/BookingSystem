@@ -38,7 +38,6 @@ class GUI(QtWidgets.QMainWindow):
         self.resource.clicked.connect(self.add_resource)
         layout.addWidget(self.resource)
 
-        #self.calendar = QtWidgets.QCalendarWidget()
         self.calendar = MyCalendar(self.database)
         self.calendar.setMaximumWidth(self.screen.width() * 0.2)
         self.calendar.selectionChanged.connect(self.add_reservation_view)
@@ -59,10 +58,8 @@ class GUI(QtWidgets.QMainWindow):
 
         # Add a scene for drawing 2d objects
         self.scene = QtWidgets.QGraphicsScene()
-        #self.scene.setSceneRect(0, 0, 0.8*screen.width(), 1.5*screen.height())
 
         # Add a view for showing the scene
-        #self.view = QtWidgets.QGraphicsView(self.scene, self)
         self.view = MyView(self.scene, self)
         self.view.adjustSize()
         self.view.show()
@@ -98,7 +95,7 @@ class GUI(QtWidgets.QMainWindow):
         self.scene.setSceneRect(self.scene.itemsBoundingRect())
 
     def add_reservation(self, reservation=None):
-        self.reservation_dialog = ReservationDialog(self, reservation=reservation)
+        self.reservation_dialog = ReservationDialog(self.database, reservation=reservation)
         self.reservation_dialog.show()
 
     def add_resource(self):

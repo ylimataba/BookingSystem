@@ -16,16 +16,19 @@ class ReservationDialog(QtWidgets.QDialog):
         layout.addWidget(self.form_group_box)
         layout.addWidget(buttonBox)
         self.setLayout(layout)
+        self.start.dateTimeChanged.connect(self.update)
 
     def create_form_group_box(self):
         self.form_group_box = QtWidgets.QGroupBox()
         layout = QtWidgets.QFormLayout()
         self.start = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
-        self.end = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
+        self.end = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime().addSecs(3600))
         self.start.setDisplayFormat("d.M.yyyy HH:mm")
         self.end.setDisplayFormat("d.M.yyyy HH:mm")
         self.start.setCalendarPopup(True)
         self.end.setCalendarPopup(True)
+        self.start.setMinimumDateTime(self.start.dateTime())
+        self.end.setMinimumDateTime(self.start.dateTime().addSecs(60))
 
         self.resources = self.database.resources.get_all()
         self.combo = QtWidgets.QComboBox()
@@ -40,6 +43,12 @@ class ReservationDialog(QtWidgets.QDialog):
         layout.addRow(QtWidgets.QLabel('Start date & time'), self.start)
         layout.addRow(QtWidgets.QLabel('End date & time'), self.end)
         self.form_group_box.setLayout(layout)
+
+    def update(self):
+        self.end.setMinimumDateTime(self.start.dateTime().addSecs(60))
+        if self.end.dateTime() < self.end.minimumDateTime():
+            self.end.setDateTime(self.end.minimumDateTime())
+
         
     def accept(self):
         resource = next(x for x in self.resources if x.name==self.combo.currentText())
