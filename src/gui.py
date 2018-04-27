@@ -96,16 +96,17 @@ class GUI(QtWidgets.QMainWindow):
             self.scene.addItem(text)
 
     def add_reservation(self):
-        self.reservation_dialog = AddReservation(self)
+        self.reservation_dialog = ReservationDialog(self)
         self.reservation_dialog.show()
 
     def add_resource(self):
         self.resource_dialog = AddResource(self)
         self.resource_dialog.show()
 
-class AddReservation(QtWidgets.QDialog):
-    def __init__(self, parent):
+class ReservationDialog(QtWidgets.QDialog):
+    def __init__(self, parent, reservation=None):
         super().__init__(parent)
+        self.reservation = reservation
         self.database = parent.database
         layout = QtWidgets.QVBoxLayout()
         buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Cancel)
@@ -119,31 +120,31 @@ class AddReservation(QtWidgets.QDialog):
     def create_form_group_box(self):
         self.form_group_box = QtWidgets.QGroupBox()
         layout = QtWidgets.QFormLayout()
-        self.dateEdit = QtWidgets.QDateEdit(QtCore.QDate.currentDate())
-        self.dateEdit.setDisplayFormat("d.M.yyyy");
-        self.dateEdit.setCalendarPopup(True)
-
-        self.start = QtWidgets.QTimeEdit(QtCore.QTime.currentTime())
-        self.end = QtWidgets.QTimeEdit(QtCore.QTime.currentTime().addSecs(3600))
-        self.start.setDisplayFormat("HH:mm")
-        self.end.setDisplayFormat("HH:mm")
+        self.start = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
+        self.end = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
+        self.start.setDisplayFormat("d.M.yyyy HH:mm")
+        self.end.setDisplayFormat("d.M.yyyy HH:mm")
+        self.start.setCalendarPopup(True)
+        self.end.setCalendarPopup(True)
 
         self.resources = self.database.resources.get_all()
         self.combo = QtWidgets.QComboBox()
         for resource in self.resources:
             self.combo.addItem(resource.name)
 
+        if self.reservation:
+            self.start.setDateTime(self.reservation.start)
+            self.end.setDateTime(self.reservation.end)
+            self.combo.setCurrentIndex(self.resources.index(self.reservation.resource.name))
         layout.addRow(QtWidgets.QLabel('Resource'), self.combo)
-        layout.addRow(QtWidgets.QLabel('Reservation date'), self.dateEdit)
-        layout.addRow(QtWidgets.QLabel('Start time'), self.start)
-        layout.addRow(QtWidgets.QLabel('End time'), self.end)
+        layout.addRow(QtWidgets.QLabel('Start date & time'), self.start)
+        layout.addRow(QtWidgets.QLabel('End date & time'), self.end)
         self.form_group_box.setLayout(layout)
         
     def accept(self):
         resource = next(x for x in self.resources if x.name==self.combo.currentText())
-        date = self.dateEdit.date()
-        start = QtCore.QDateTime(date, self.start.time())
-        end = QtCore.QDateTime(date, self.end.time())
+        start = self.start.dateTime()
+        end = self.end.dateTime()
         reservation = self.database.new_reservation(resource=resource, start=start, end=end)
         if not reservation:
             print('Failed to create reservation')
