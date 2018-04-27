@@ -95,6 +95,7 @@ class GUI(QtWidgets.QMainWindow):
         else:
             text = QtWidgets.QGraphicsSimpleTextItem("No reservations for selected date")
             self.scene.addItem(text)
+        self.scene.setSceneRect(self.scene.itemsBoundingRect())
 
     def add_reservation(self, reservation=None):
         self.reservation_dialog = ReservationDialog(self, reservation=reservation)

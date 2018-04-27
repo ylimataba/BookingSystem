@@ -50,7 +50,9 @@ class ReservationDialog(QtWidgets.QDialog):
         else:
             reservation = Reservation(resource=resource, start=start, end=end)
         if not self.database.save(reservation):
-            print('Failed to create reservation')
+            self.error = ErrorMessageDialog('Failed to create reservation')
+            self.error.show()
+            print('error')
         self.close()
 
 class ResourceDialog(QtWidgets.QDialog):
@@ -87,3 +89,9 @@ class ResourceDialog(QtWidgets.QDialog):
         self.database.save(resource)
         self.close()
 
+class ErrorMessageDialog(QtWidgets.QMessageBox):
+    def __init__(self, text):
+        super().__init__()
+        self.setIcon(QtWidgets.QMessageBox.Warning)
+        self.setText(text)
+        self.setStandardButtons(QtWidgets.QMessageBox.Ok)
