@@ -61,9 +61,9 @@ class Database:
         try:
             if type(object_to_save) is Reservation:
                 self.resources.save(object_to_save.resource)
-                self.reservations.save(object_to_save)
+                return self.reservations.save(object_to_save)
             elif type(object_to_save) is Resource:
-                self.resources.save(object_to_save)
+                return self.resources.save(object_to_save)
         except Exception as e:
             raise DatabaseError(str(e))
 

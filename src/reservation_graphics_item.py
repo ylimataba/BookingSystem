@@ -1,9 +1,11 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from models import Reservation, Resource
+from dialogs import ReservationDialog
 
 class ReservationGraphicsItem(QtWidgets.QGraphicsItem):
-    def __init__(self, reservation, width, height, offset, date, first):
+    def __init__(self, database, reservation, width, height, offset, date, first):
         super().__init__()
+        self.database = database
         self.width = width
         self.height = height
         self.offset = offset
@@ -31,5 +33,7 @@ class ReservationGraphicsItem(QtWidgets.QGraphicsItem):
         self.text.paint(painter, option, widget)
 
     def mousePressEvent(self, event):
-        print(self.reservation.ID)
+        self.reservation_dialog = ReservationDialog(self.database, reservation=self.reservation)
+        self.reservation_dialog.show()
+        super().mousePressEvent(event)
                 

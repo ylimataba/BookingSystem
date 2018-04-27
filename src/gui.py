@@ -3,6 +3,7 @@ from models import Reservation, Resource
 from reservation_graphics_item import ReservationGraphicsItem
 from hour_row_graphics_item import HourRowGraphicsItem
 from column_header_graphics_item import ColumnHeaderGraphicsItem
+from dialogs import ReservationDialog, ResourceDialog
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -87,7 +88,7 @@ class GUI(QtWidgets.QMainWindow):
             headers = ColumnHeaderGraphicsItem(self.screen.width(), offset-5, resources, offset)
             self.draw_hour_lines(self.screen.width(), height, offset, number_of_lines)
             for reservation in reservations:
-                item = ReservationGraphicsItem(reservation, width, height, offset, date, start)
+                item = ReservationGraphicsItem(self.database, reservation, width, height, offset, date, start)
                 self.scene.addItem(item)
             self.scene.addItem(hours)
             self.scene.addItem(headers)
@@ -95,95 +96,13 @@ class GUI(QtWidgets.QMainWindow):
             text = QtWidgets.QGraphicsSimpleTextItem("No reservations for selected date")
             self.scene.addItem(text)
 
-    def add_reservation(self):
-        self.reservation_dialog = ReservationDialog(self)
+    def add_reservation(self, reservation=None):
+        self.reservation_dialog = ReservationDialog(self, reservation=reservation)
         self.reservation_dialog.show()
 
     def add_resource(self):
-        self.resource_dialog = AddResource(self)
+        self.resource_dialog = ResourceDialog()
         self.resource_dialog.show()
-
-class ReservationDialog(QtWidgets.QDialog):
-    def __init__(self, parent, reservation=None):
-        super().__init__(parent)
-        self.reservation = reservation
-        self.database = parent.database
-        layout = QtWidgets.QVBoxLayout()
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Cancel)
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
-        self.create_form_group_box()
-        layout.addWidget(self.form_group_box)
-        layout.addWidget(buttonBox)
-        self.setLayout(layout)
-
-    def create_form_group_box(self):
-        self.form_group_box = QtWidgets.QGroupBox()
-        layout = QtWidgets.QFormLayout()
-        self.start = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
-        self.end = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
-        self.start.setDisplayFormat("d.M.yyyy HH:mm")
-        self.end.setDisplayFormat("d.M.yyyy HH:mm")
-        self.start.setCalendarPopup(True)
-        self.end.setCalendarPopup(True)
-
-        self.resources = self.database.resources.get_all()
-        self.combo = QtWidgets.QComboBox()
-        for resource in self.resources:
-            self.combo.addItem(resource.name)
-
-        if self.reservation:
-            self.start.setDateTime(self.reservation.start)
-            self.end.setDateTime(self.reservation.end)
-            self.combo.setCurrentIndex(self.resources.index(self.reservation.resource.name))
-        layout.addRow(QtWidgets.QLabel('Resource'), self.combo)
-        layout.addRow(QtWidgets.QLabel('Start date & time'), self.start)
-        layout.addRow(QtWidgets.QLabel('End date & time'), self.end)
-        self.form_group_box.setLayout(layout)
-        
-    def accept(self):
-        resource = next(x for x in self.resources if x.name==self.combo.currentText())
-        start = self.start.dateTime()
-        end = self.end.dateTime()
-        reservation = self.database.new_reservation(resource=resource, start=start, end=end)
-        if not reservation:
-            print('Failed to create reservation')
-        self.close()
-
-class AddResource(QtWidgets.QDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.database = parent.database
-        layout = QtWidgets.QVBoxLayout()
-
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Cancel)
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
-
-        self.create_form_group_box()
-
-        layout.addWidget(self.form_group_box)
-        layout.addWidget(buttonBox)
-        self.setLayout(layout)
-
-    def create_form_group_box(self):
-        self.form_group_box = QtWidgets.QGroupBox()
-        layout = QtWidgets.QFormLayout()
-        
-        self.name = QtWidgets.QLineEdit()
-        self.resource_type = QtWidgets.QLineEdit()
-
-        layout.addRow(QtWidgets.QLabel('Name'), self.name)
-        layout.addRow(QtWidgets.QLabel('Type'), self.resource_type)
-        self.form_group_box.setLayout(layout)
-        
-    def accept(self):
-        name = self.name.text()
-        resource_type = self.resource_type.text()
-        resource = Resource(name=name, resource_type=resource_type)
-        self.database.save(resource)
-        self.close()
-
 
 class MyView(QtWidgets.QGraphicsView):
     def __init__(self, scene, parent):

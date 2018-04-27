@@ -15,6 +15,7 @@ class ResourceTable(Table):
             self.cursor.execute('INSERT INTO resources(name, type) VALUES (?,?)', resource.get_data())
             self.connection.commit()
             resource.ID = self.cursor.lastrowid
+        return True
 
     def get_all(self):
         resources = []
