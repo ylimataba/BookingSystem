@@ -99,7 +99,7 @@ class GUI(QtWidgets.QMainWindow):
         self.reservation_dialog.show()
 
     def add_resource(self):
-        self.resource_dialog = ResourceDialog()
+        self.resource_dialog = ResourceDialog(self.database)
         self.resource_dialog.show()
 
 class MyView(QtWidgets.QGraphicsView):

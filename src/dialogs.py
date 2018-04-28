@@ -68,9 +68,9 @@ class ReservationDialog(QtWidgets.QDialog):
         self.close()
 
 class ResourceDialog(QtWidgets.QDialog):
-    def __init__(self):
+    def __init__(self, database):
         super().__init__()
-        self.database = parent.database
+        self.database = database
         layout = QtWidgets.QVBoxLayout()
 
         buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Cancel)

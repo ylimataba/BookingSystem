@@ -15,7 +15,7 @@ class Model():
 
 class Reservation(Model):
     def __init__(self, ID=None, customer=None, resource=None, date=None,
-            start=None, end=None, services=None, row=None):
+            start=None, end=None, services=[], row=None):
         super().__init__()
         #self.customer = customer
         self.resource = resource
@@ -110,5 +110,8 @@ class Service(Model):
         else:
             data = (self.name, self.price, self.duration, self.description)
         return data
+
+    def __str__(self):
+        return "Service(ID: {0}, name: {1}, price: {2}, duration: {3}, description: {4})".format(self.ID, self.name, self.price, self.duration, self.description)
 
 

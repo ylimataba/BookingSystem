@@ -3,7 +3,8 @@ from database_error import DatabaseError
 from reservation_table import ReservationTable
 from resource_table import ResourceTable
 from service_table import ServiceTable
-from models import Reservation, Resource
+from reservation_service_table import ReservationServiceTable
+from models import Reservation, Resource, Service
 
 class Database:
     def __init__(self, filename="default.db"):
@@ -25,8 +26,8 @@ class Database:
                 reservation_rows = self.reservations.get_all()
             for row in reservation_rows:
                 resource = self.resources.get_by_id(row[1])
-                services = get_services(reservationID=row[0])
-                reservations.append(Reservation(row=row, resource=resource))
+                rservices = self.get_services(reservationID=row[0])
+                reservations.append(Reservation(row=row, resource=resource, services=rservices))
             return reservations
         except Exception as e:
             raise DatabaseError(str(e))
@@ -43,11 +44,11 @@ class Database:
     def get_services(self, reservationID=None, ID=None):
         try:
             if reservationID:
-                services = []
+                rservices = []
                 service_id_rows = self.reservationservices.get_by_reservation_id(reservationID)
                 for row in service_id_rows:
-                    services.append(self.get_services(ID=row[0]))
-                return services
+                    rservices.append(self.get_services(ID=row[1]))
+                return rservices
             elif ID:
                 return self.services.get_by_id(ID)
             else:
@@ -72,7 +73,8 @@ class Database:
         try:
             if type(object_to_save) is Reservation:
                 self.resources.save(object_to_save.resource)
-                return self.reservations.save(object_to_save)
+                self.reservations.save(object_to_save)
+                return self.reservationservices.save(object_to_save)
             elif type(object_to_save) is Resource:
                 return self.resources.save(object_to_save)
             elif type(object_to_save) is Service:
@@ -85,5 +87,6 @@ class Database:
             self.resources.reset()
             self.reservations.reset()
             self.services.reset()
+            self.reservationservices.reset()
         except Exception as e:
             raise DatabaseError(str(e))

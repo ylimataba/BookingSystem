@@ -4,7 +4,12 @@ from models import Service
 class ReservationServiceTable(Table):
     def __init__(self, connection):
         super().__init__(connection)
-        self.cursor.execute('CREATE TABLE IF NOT EXISTS reservationservices (reservationserviceID INTEGER PRIMARY KEY AUTOINCREMENT, service INT, reservation INT)')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS reservationservices (
+                reservationserviceID INTEGER PRIMARY KEY AUTOINCREMENT,
+                service INT,
+                reservation INT,
+                FOREIGN KEY(service) REFERENCES services(serviceID),
+                FOREIGN KEY(reservation) REFERENCES reservations(reservationID))''')
         self.connection.commit()
         
     def save(self, reservation):
@@ -19,7 +24,7 @@ class ReservationServiceTable(Table):
         self.connection.commit()
 
     def get_by_reservation_id(self, reservationID):
-        self.cursor.execute('SELECT service FROM reservationservices WHERE reservation=?', (reservationID,))
+        self.cursor.execute('SELECT * FROM reservationservices WHERE reservation=?', (reservationID,))
         rows = self.cursor.fetchall()
         return rows
 

@@ -31,7 +31,8 @@ class ServiceTable(Table):
 
     def get_by_id(self, ID):
         self.cursor.execute('SELECT * FROM services WHERE serviceID=?', (ID,))
-        service = Service(row=self.cursor.fetchone())
+        row = self.cursor.fetchone()
+        service = Service(row=row)
         return service
 
     def reset(self):
