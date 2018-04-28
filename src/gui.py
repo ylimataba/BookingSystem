@@ -3,7 +3,7 @@ from models import Reservation, Resource
 from reservation_graphics_item import ReservationGraphicsItem
 from hour_row_graphics_item import HourRowGraphicsItem
 from column_header_graphics_item import ColumnHeaderGraphicsItem
-from dialogs import ReservationDialog, ResourceDialog
+from dialogs import ReservationDialog, ResourceDialog, ServiceDialog, CustomerDialog
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -37,6 +37,14 @@ class GUI(QtWidgets.QMainWindow):
         self.resource = QtWidgets.QPushButton("Add resource")
         self.resource.clicked.connect(self.add_resource)
         layout.addWidget(self.resource)
+
+        self.service = QtWidgets.QPushButton("Add service")
+        self.service.clicked.connect(self.add_service)
+        layout.addWidget(self.service)
+
+        self.customer = QtWidgets.QPushButton("Add customer")
+        self.customer.clicked.connect(self.add_customer)
+        layout.addWidget(self.customer)
 
         self.calendar = MyCalendar(self.database)
         self.calendar.setMaximumWidth(self.screen.width() * 0.2)
@@ -101,6 +109,14 @@ class GUI(QtWidgets.QMainWindow):
     def add_resource(self):
         self.resource_dialog = ResourceDialog(self.database)
         self.resource_dialog.show()
+
+    def add_service(self):
+        self.service_dialog = ServiceDialog(self.database)
+        self.service_dialog.show()
+
+    def add_customer(self):
+        self.customer_dialog = CustomerDialog(self.database)
+        self.customer_dialog.show()
 
 class MyView(QtWidgets.QGraphicsView):
     def __init__(self, scene, parent):

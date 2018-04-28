@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from models import Reservation, Resource
+from models import Reservation, Resource, Service, Customer
 from hour_row_graphics_item import HourRowGraphicsItem
 from column_header_graphics_item import ColumnHeaderGraphicsItem
 
@@ -100,6 +100,81 @@ class ResourceDialog(QtWidgets.QDialog):
         resource = Resource(name=name, resource_type=resource_type)
         self.database.save(resource)
         self.close()
+
+class ServiceDialog(QtWidgets.QDialog):
+    def __init__(self, database):
+        super().__init__()
+        self.database = database
+        layout = QtWidgets.QVBoxLayout()
+
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+        self.create_form_group_box()
+
+        layout.addWidget(self.form_group_box)
+        layout.addWidget(buttonBox)
+        self.setLayout(layout)
+
+    def create_form_group_box(self):
+        self.form_group_box = QtWidgets.QGroupBox()
+        layout = QtWidgets.QFormLayout()
+        
+        self.name = QtWidgets.QLineEdit()
+        self.price = QtWidgets.QLineEdit()
+        self.duration = QtWidgets.QLineEdit()
+        self.description = QtWidgets.QTextEdit()
+
+        layout.addRow(QtWidgets.QLabel('Name'), self.name)
+        layout.addRow(QtWidgets.QLabel('Price'), self.price)
+        layout.addRow(QtWidgets.QLabel('Duration'), self.duration)
+        layout.addRow(QtWidgets.QLabel('Description'), self.description)
+        self.form_group_box.setLayout(layout)
+        
+    def accept(self):
+        name = self.name.text()
+        price = float(self.price.text())
+        duration = float(self.duration.text())
+        description = self.description.toPlainText()
+        service = Service(name=name, price=price, duration=duration, description=description)
+        self.database.save(service)
+        self.close()
+
+class CustomerDialog(QtWidgets.QDialog):
+    def __init__(self, database):
+        super().__init__()
+        self.database = database
+        layout = QtWidgets.QVBoxLayout()
+
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+        self.create_form_group_box()
+
+        layout.addWidget(self.form_group_box)
+        layout.addWidget(buttonBox)
+        self.setLayout(layout)
+
+    def create_form_group_box(self):
+        self.form_group_box = QtWidgets.QGroupBox()
+        layout = QtWidgets.QFormLayout()
+        
+        self.name = QtWidgets.QLineEdit()
+        self.email = QtWidgets.QLineEdit()
+
+        layout.addRow(QtWidgets.QLabel('Name'), self.name)
+        layout.addRow(QtWidgets.QLabel('Email'), self.email)
+        self.form_group_box.setLayout(layout)
+        
+    def accept(self):
+        name = self.name.text()
+        email = self.email.text()
+        customer = Customer(name=name, email=email)
+        self.database.save(customer)
+        self.close()
+
 
 class ErrorMessageDialog(QtWidgets.QMessageBox):
     def __init__(self, text):
