@@ -17,13 +17,13 @@ class Reservation(Model):
     def __init__(self, ID=None, customer=None, resource=None, date=None,
             start=None, end=None, services=[], row=None):
         super().__init__()
-        #self.customer = customer
+        self.customer = customer
         self.resource = resource
         self.services = services
         if row:
             self.ID = row[0]
-            self.start = QtCore.QDateTime.fromString(row[2], 'yyyy-MM-dd hh:mm')
-            self.end = QtCore.QDateTime.fromString(row[3], 'yyyy-MM-dd hh:mm')
+            self.start = QtCore.QDateTime.fromString(row[3], 'yyyy-MM-dd hh:mm')
+            self.end = QtCore.QDateTime.fromString(row[4], 'yyyy-MM-dd hh:mm')
         else:
             self.ID = ID
             self.start = start
@@ -31,9 +31,9 @@ class Reservation(Model):
 
     def get_data(self):
         if self.ID:
-            data = (self.resource.ID, self.start.toString('yyyy-MM-dd hh:mm'), self.end.toString('yyyy-MM-dd hh:mm'), self.ID)
+            data = (self.customer.ID, self.resource.ID, self.start.toString('yyyy-MM-dd hh:mm'), self.end.toString('yyyy-MM-dd hh:mm'), self.ID)
         else:
-            data = (self.resource.ID, self.start.toString('yyyy-MM-dd hh:mm'), self.end.toString('yyyy-MM-dd hh:mm'))
+            data = (self.customer.ID, self.resource.ID, self.start.toString('yyyy-MM-dd hh:mm'), self.end.toString('yyyy-MM-dd hh:mm'))
         return data
 
     def to_html(self):
@@ -113,5 +113,27 @@ class Service(Model):
 
     def __str__(self):
         return "Service(ID: {0}, name: {1}, price: {2}, duration: {3}, description: {4})".format(self.ID, self.name, self.price, self.duration, self.description)
+
+class Customer(Model):
+    def __init__(self, ID=None, name=None, email=None, row=None):
+        super().__init__()
+        if row:
+            self.ID = row[0]
+            self.name = row[1]
+            self.email = row[2]
+        else:
+            self.ID = ID
+            self.name = name
+            self.email = email
+
+    def get_data(self):
+        if self.ID:
+            data = (self.name, self.email, self.ID)
+        else:
+            data = (self.name, self.email)
+        return data
+
+    def __str__(self):
+        return "Customer(ID: {0}, name: {1}, email: {2})".format(self.ID, self.name, self.email) 
 
 

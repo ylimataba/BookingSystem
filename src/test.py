@@ -1,7 +1,7 @@
 import unittest
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from models import Reservation, Resource, Service
+from models import Reservation, Resource, Service, Customer
 from database import Database
 from database_error import DatabaseError
 
@@ -12,6 +12,7 @@ class TestDatabase(unittest.TestCase):
         self.db.reset()
     
     def test_get_reservations(self):
+        customer = Customer(name='Teemu Teekkari', email='teemu.teekkari@aalto fi')
         service1 = Service(name='service1',price=10.0,duration=60.0,description='service1 description')
         service2 = Service(name='service1',price=10.0,duration=60.0,description='service1 description')
         self.db.save(service1)
@@ -24,7 +25,7 @@ class TestDatabase(unittest.TestCase):
             end_time = QtCore.QTime(x,59)
             start = QtCore.QDateTime(date,start_time)
             end = QtCore.QDateTime(date, end_time)
-            new_reservation = Reservation(resource=resource, start=start, end=end, services=[service1,service2])
+            new_reservation = Reservation(customer=customer, resource=resource, start=start, end=end, services=[service1,service2])
             self.db.save(new_reservation)
             added_reservations.append(new_reservation)
         reservations = self.db.get_reservations()
@@ -62,13 +63,14 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(service, service_from_db)
 
     def test_is_free(self): # change resources.is_free to reservations.is_free
+        customer = Customer(name='Teemu Teekkari', email='teemu.teekkari@aalto fi')
         resource = Resource(name="Resource1", resource_type="ROOM")
         date = QtCore.QDate(2018,3,8)
         start_time = QtCore.QTime(10,0)
         end_time = QtCore.QTime(11,0)
         start = QtCore.QDateTime(date,start_time)
         end = QtCore.QDateTime(date, end_time)
-        reservation = Reservation(resource=resource, start=start, end=end)
+        reservation = Reservation(customer=customer, resource=resource, start=start, end=end)
         self.db.save(reservation)
         self.assertEqual(self.db.resources.is_free(2,'2018-03-08 10:00','2018-03-08 11:00'), True)
         self.assertEqual(self.db.resources.is_free(1,'2018-03-07 10:00','2018-03-07 11:00'), True)
@@ -81,6 +83,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(self.db.resources.is_free(1,'2018-03-08 09:00','2018-03-08 14:00'), False)
 
     def test_get_reservations_by_date(self):
+        customer = Customer(name='Teemu Teekkari', email='teemu.teekkari@aalto fi')
         added_reservations = []
         date = QtCore.QDate.currentDate()
         resource = Resource(name="Resource1", resource_type="ROOM")
@@ -89,7 +92,7 @@ class TestDatabase(unittest.TestCase):
             end_time = QtCore.QTime(x-1,0)
             start = QtCore.QDateTime(date,start_time)
             end = QtCore.QDateTime(date, end_time)
-            new_reservation = Reservation(resource=resource, start=start, end=end)
+            new_reservation = Reservation(customer=customer, resource=resource, start=start, end=end)
             self.db.save(new_reservation)
             added_reservations.append(new_reservation)
         reservations = self.db.get_reservations(date=date)
@@ -97,6 +100,7 @@ class TestDatabase(unittest.TestCase):
             self.assertEqual(reservations[len(reservations)-i-1], added_reservations[i])
 
     def test_get_start_and_end(self):
+        customer = Customer(name='Teemu Teekkari', email='teemu.teekkari@aalto fi')
         date = QtCore.QDate.currentDate()
         resource = Resource(name="Resource1", resource_type="ROOM")
         for x in range(8,19):
@@ -104,12 +108,11 @@ class TestDatabase(unittest.TestCase):
             end_time = QtCore.QTime(x+1,0)
             start = QtCore.QDateTime(date,start_time)
             end = QtCore.QDateTime(date, end_time)
-            new_reservation = Reservation(resource=resource, start=start, end=end)
+            new_reservation = Reservation(customer=customer, resource=resource, start=start, end=end)
             self.db.save(new_reservation)
         (first, last) = self.db.get_start_and_end(date)
         self.assertEqual(first, 8)
         self.assertEqual(last, 20)
-
 
 if __name__ == '__main__':
     unittest.main()

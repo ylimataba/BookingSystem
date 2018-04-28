@@ -6,19 +6,21 @@ class ReservationTable(Table):
         super().__init__(connection)
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS reservations (
                 reservationID INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer INT,
                 resource INT,
                 start TEXT,
                 end TEXT,
+                FOREIGN KEY(customer) REFERENCES customers(customerID),
                 FOREIGN KEY(resource) REFERENCES resources(resourceID))''')
         self.connection.commit()
         
     def save(self, reservation):
         if self.is_free(reservation):
             if reservation.ID:
-                self.cursor.execute('UPDATE reservations SET resource=?, start=?, end=? WHERE reservationID=?', reservation.get_data())
+                self.cursor.execute('UPDATE reservations SET customer=?, resource=?, start=?, end=? WHERE reservationID=?', reservation.get_data())
                 self.connection.commit()
             else:
-                self.cursor.execute('INSERT INTO reservations(resource, start, end) VALUES (?,?,?)', reservation.get_data())
+                self.cursor.execute('INSERT INTO reservations(customer, resource, start, end) VALUES (?,?,?,?)', reservation.get_data())
                 self.connection.commit()
                 reservation.ID = self.cursor.lastrowid
             return True
