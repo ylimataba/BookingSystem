@@ -97,6 +97,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(self.db.resources.is_free(1,'2018-03-08 09:00','2018-03-08 10:30'), False)
         self.assertEqual(self.db.resources.is_free(1,'2018-03-08 10:30','2018-03-08 12:00'), False)
         self.assertEqual(self.db.resources.is_free(1,'2018-03-08 09:00','2018-03-08 14:00'), False)
+        self.assertEqual(self.db.resources.is_free(1,'2018-03-08 10:30','2018-03-08 10:59'), False)
 
     def test_get_reservations_by_date(self):
         customer = Customer(name='Teemu Teekkari', email='teemu.teekkari@aalto fi')

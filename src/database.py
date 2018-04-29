@@ -100,6 +100,23 @@ class Database:
         except Exception as e:
             raise DatabaseError(str(e))
 
+    def delete(self, object_to_delete):
+        try:
+            if type(object_to_delete) is Reservation:
+                self.reservationservices.delete_by_reservation_id(object_to_delete.ID)
+                self.reservations.delete(object_to_delete)
+            elif type(object_to_delete) is Resource:
+                self.reservations.delete_by_resource_id(object_to_delete.ID)
+                self.resources.delete(object_to_delete)
+            elif type(object_to_delete) is Customer:
+                self.reservations.delete_by_customer_id(object_to_delete.ID)
+                self.customers.delete(object_to_delete)
+            elif type(object_to_delete) is Service:
+                self.reservationservices.delete_by_service_id(object_to_delete.ID)
+                self.services.delete(object_to_delete)
+        except Exception as e:
+            raise DatabaseError(str(e))
+
     def reset(self):
         try:
             self.resources.reset()

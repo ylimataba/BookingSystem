@@ -34,8 +34,9 @@ class ResourceTable(Table):
         self.cursor.execute('''SELECT resource FROM reservations
                 WHERE resource=? 
                 AND (start BETWEEN ? AND ?
-                OR end BETWEEN ? AND ?)''',
-                (resourceID,start,end,start,end))
+                OR end BETWEEN ? AND ?)
+                OR (resource=? AND start <= ? AND end >= ?)''',
+                (resourceID,start,end,start,end,resourceID,start,end))
         rows = self.cursor.fetchall()
         if len(rows) > 0:
             return False

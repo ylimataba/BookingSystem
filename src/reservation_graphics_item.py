@@ -3,8 +3,9 @@ from models import Reservation, Resource
 from dialogs import ReservationDialog
 
 class ReservationGraphicsItem(QtWidgets.QGraphicsItem):
-    def __init__(self, database, reservation, width, height, offset, date, first):
+    def __init__(self, parent, database, reservation, width, height, offset, date, first):
         super().__init__()
+        self.parent = parent
         self.database = database
         self.width = width
         self.height = height
@@ -31,3 +32,8 @@ class ReservationGraphicsItem(QtWidgets.QGraphicsItem):
     def paint(self, painter, option, widget):
         self.rect.paint(painter, option, widget)
         self.text.paint(painter, option, widget)
+
+    def mousePressEvent(self, event):
+        reservation_dialog = ReservationDialog(self.parent, reservation=self.reservation)
+        reservation_dialog.show()
+        super().mousePressEvent(event)

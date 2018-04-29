@@ -39,11 +39,12 @@ class ReservationTable(Table):
     def is_free(self, reservation):
         start = reservation.start.toString('yyyy-MM-dd hh:mm')
         end = reservation.end.toString('yyyy-MM-dd hh:mm')
-        self.cursor.execute('''SELECT * FROM reservations
+        self.cursor.execute('''SELECT resource FROM reservations
                 WHERE resource=? 
                 AND (start BETWEEN ? AND ?
-                OR end BETWEEN ? AND ?)''',
-                (reservation.resource.ID,start,end,start,end))
+                OR end BETWEEN ? AND ?)
+                OR (resource=? AND start <= ? AND end >= ?)''',
+                (reservation.resource.ID,start,end,start,end,reservation.resource.ID,start,end))
         rows = self.cursor.fetchall()
         if reservation.ID:
             if len(rows) == 1:

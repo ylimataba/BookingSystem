@@ -93,7 +93,7 @@ class GUI(QtWidgets.QMainWindow):
             headers = ColumnHeaderGraphicsItem(self.screen.width(), offset-5, resources, offset)
             self.draw_hour_lines(self.screen.width(), height, offset, number_of_lines)
             for reservation in reservations:
-                item = ReservationGraphicsItem(self.database, reservation, width, height, offset, date, start)
+                item = ReservationGraphicsItem(self, self.database, reservation, width, height, offset, date, start)
                 self.scene.addItem(item)
             self.scene.addItem(hours)
             self.scene.addItem(headers)
@@ -117,6 +117,9 @@ class GUI(QtWidgets.QMainWindow):
     def add_customer(self):
         self.customer_dialog = CustomerDialog(self)
         self.customer_dialog.show()
+
+    def update(self):
+        self.add_reservation_view()
 
 class MyView(QtWidgets.QGraphicsView):
     def __init__(self, scene, parent):
