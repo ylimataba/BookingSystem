@@ -13,14 +13,18 @@ class ReservationServiceTable(Table):
         self.connection.commit()
         
     def save(self, reservation):
-        self.remove_by_reservation(reservation)
+        self.delete_by_reservation_id(reservation.ID)
         for service in reservation.services:
             self.cursor.execute('INSERT INTO reservationservices(service, reservation) VALUES (?,?)', (service.ID, reservation.ID))
             self.connection.commit()
         return True
 
-    def remove_by_reservation(self, reservation):
-        self.cursor.execute('DELETE FROM reservationservices WHERE reservation=?', (reservation.ID,))
+    def delete_by_reservation_id(self, reservationID):
+        self.cursor.execute('DELETE FROM reservationservices WHERE reservation=?', (reservationID,))
+        self.connection.commit()
+
+    def delete_by_service_id(self, serviceID):
+        self.cursor.execute('DELETE FROM reservationservices WHERE service=?', (serviceID,))
         self.connection.commit()
 
     def get_by_reservation_id(self, reservationID):

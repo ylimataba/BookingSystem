@@ -30,6 +30,10 @@ class CustomerTable(Table):
         customer = Customer(row=self.cursor.fetchone())
         return customer
 
+    def delete(self, customer):
+        self.cursor.execute('DELETE FROM customers WHERE customerID=?', (customer.ID,))
+        self.connection.commit()
+
     def reset(self):
         self.cursor.execute('DROP TABLE IF EXISTS customers')
         self.connection.commit()

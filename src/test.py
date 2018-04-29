@@ -10,7 +10,23 @@ class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.db = Database('test.db')
         self.db.reset()
+
+    def test_get_customers(self):
+        customer1 = Customer(name="Teemu Teekkari", email="teemu.teekkari@aalto.fi")
+        customer2 = Customer(name="Tiina Teekkari", email="tiina.teekkari@aalto.fi")
+        self.db.save(customer1)
+        self.db.save(customer2)
+        customers = self.db.get_customers()
+        self.assertEqual(customers,[customer1,customer2])
     
+    def test_get_services(self):
+        service1 = Service(name='service1',price=10.0,duration=60.0,description='service1 description')
+        service2 = Service(name='service1',price=10.0,duration=60.0,description='service1 description')
+        self.db.save(service1)
+        self.db.save(service2)
+        services = self.db.get_services()
+        self.assertEqual(services, [service1,service2])
+
     def test_get_reservations(self):
         customer = Customer(name='Teemu Teekkari', email='teemu.teekkari@aalto fi')
         service1 = Service(name='service1',price=10.0,duration=60.0,description='service1 description')

@@ -27,13 +27,17 @@ class ServiceTable(Table):
         rows = self.cursor.fetchall()
         for row in rows:
             services.append(Service(row=row))
-        return Services
+        return services
 
     def get_by_id(self, ID):
         self.cursor.execute('SELECT * FROM services WHERE serviceID=?', (ID,))
         row = self.cursor.fetchone()
         service = Service(row=row)
         return service
+
+    def delete(self, service):
+        self.cursor.execute('DELETE FROM services WHERE serviceID=?', (service.ID,))
+        self.connection.commit()
 
     def reset(self):
         self.cursor.execute('DROP TABLE IF EXISTS services')

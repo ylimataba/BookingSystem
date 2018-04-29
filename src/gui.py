@@ -103,19 +103,19 @@ class GUI(QtWidgets.QMainWindow):
         self.scene.setSceneRect(self.scene.itemsBoundingRect())
 
     def add_reservation(self, reservation=None):
-        self.reservation_dialog = ReservationDialog(self.database, reservation=reservation)
+        self.reservation_dialog = ReservationDialog(self, reservation=reservation)
         self.reservation_dialog.show()
 
     def add_resource(self):
-        self.resource_dialog = ResourceDialog(self.database)
+        self.resource_dialog = ResourceDialog(self)
         self.resource_dialog.show()
 
     def add_service(self):
-        self.service_dialog = ServiceDialog(self.database)
+        self.service_dialog = ServiceDialog(self)
         self.service_dialog.show()
 
     def add_customer(self):
-        self.customer_dialog = CustomerDialog(self.database)
+        self.customer_dialog = CustomerDialog(self)
         self.customer_dialog.show()
 
 class MyView(QtWidgets.QGraphicsView):

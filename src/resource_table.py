@@ -41,6 +41,10 @@ class ResourceTable(Table):
             return False
         return True
 
+    def delete(self, resource):
+        self.cursor.execute('DELETE FROM resources WHERE resourceID=?', (resource.ID,))
+        self.connection.commit()
+
     def reset(self):
         self.cursor.execute('DROP TABLE IF EXISTS resources')
         self.connection.commit()

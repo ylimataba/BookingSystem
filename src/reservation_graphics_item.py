@@ -31,9 +31,3 @@ class ReservationGraphicsItem(QtWidgets.QGraphicsItem):
     def paint(self, painter, option, widget):
         self.rect.paint(painter, option, widget)
         self.text.paint(painter, option, widget)
-
-    def mousePressEvent(self, event):
-        self.reservation_dialog = ReservationDialog(self.database, reservation=self.reservation)
-        self.reservation_dialog.show()
-        super().mousePressEvent(event)
-                

@@ -53,6 +53,18 @@ class ReservationTable(Table):
             return False
         return True
 
+    def delete(self, reservation):
+        self.cursor.execute('DELETE FROM reservations WHERE reservationID=?', (reservation.ID,))
+        self.connection.commit()
+
+    def delete_by_resource_id(self, resourceID):
+        self.cursor.execute('DELETE FROM reservations WHERE resource=?', (resourceID,))
+        self.connection.commit()
+    
+    def delete_by_customer_id(self, customerID):
+        self.cursor.execute('DELETE FROM reservations WHERE customer=?', (customerID,))
+        self.connection.commit()
+
     def reset(self):
         self.cursor.execute('DROP TABLE IF EXISTS reservations')
         self.connection.commit()

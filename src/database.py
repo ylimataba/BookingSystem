@@ -86,12 +86,17 @@ class Database:
             if type(object_to_save) is Reservation:
                 self.customers.save(object_to_save.customer)
                 self.resources.save(object_to_save.resource)
-                self.reservations.save(object_to_save)
-                return self.reservationservices.save(object_to_save)
+                if self.reservations.save(object_to_save):
+                    self.reservationservices.save(object_to_save)
+                    return True
+                else:
+                    return False
             elif type(object_to_save) is Resource:
                 return self.resources.save(object_to_save)
             elif type(object_to_save) is Service:
                 return self.services.save(object_to_save)
+            elif type(object_to_save) is Customer:
+                return self.customers.save(object_to_save)
         except Exception as e:
             raise DatabaseError(str(e))
 
