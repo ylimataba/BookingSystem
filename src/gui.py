@@ -88,7 +88,7 @@ class GUI(QtWidgets.QMainWindow):
             resources = self.database.resources.get_all()
             offset = 30
             width = (self.screen.width() - offset) / 5
-            height = self.screen.height() / 12
+            height = self.screen.height() / 5
             hours = HourRowGraphicsItem(offset-15, height * number_of_lines, offset, start, end)
             headers = ColumnHeaderGraphicsItem(width*len(resources), offset-5, resources, offset)
             self.draw_hour_lines(width*len(resources)+30, height, offset, number_of_lines)

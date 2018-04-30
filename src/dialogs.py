@@ -64,7 +64,8 @@ class ReservationDialog(QtWidgets.QDialog):
         self.service_buttons = ServiceButtonGroup(self.database)
         self.service_buttons.setExclusive(False)
         for i, service in enumerate(services):
-            button = QtWidgets.QCheckBox(service.name)
+            text = "{0} Price: {1} Duration: {2}".format(service.name, service.price, service.duration)
+            button = QtWidgets.QCheckBox(text)
             button.setToolTip(service.description)
             layout.addWidget(button, i + 1, 1)
             self.service_buttons.addButton(button, service.ID)
@@ -181,7 +182,10 @@ class ReservationDialog(QtWidgets.QDialog):
         if self.new_customer_button.isChecked():
             name = self.name.text()
             email = self.email.text()
-            customer = Customer(name=name, email=email)
+            if name and email:
+                customer = Customer(name=name, email=email)
+            else:
+                customer = None
         if not customer:
             self.error = MessageDialog('Please select a customer.')
             self.error.show()
@@ -234,21 +238,25 @@ class ResourceDialog(QtWidgets.QDialog):
         self.resource_type = QtWidgets.QLineEdit()
 
         layout.addRow(QtWidgets.QLabel('Name'), self.name)
-        layout.addRow(QtWidgets.QLabel('Type'), self.resource_type)
+        layout.addRow(QtWidgets.QLabel('Type (optional)'), self.resource_type)
         self.form_group_box.setLayout(layout)
         
     def accept(self):
         name = self.name.text()
         resource_type = self.resource_type.text()
-        if self.resource:
-            resource = Resource(ID=self.resource.ID, name=name, resource_type=resource_type)
+        if name:
+            if self.resource:
+                resource = Resource(ID=self.resource.ID, name=name, resource_type=resource_type)
+            else:
+                resource = Resource(name=name, resource_type=resource_type)
+            self.database.save(resource)
+            self.information = MessageDialog("Resource added", icon=QtWidgets.QMessageBox.Information)
+            self.information.show()
+            self.close()
+            self.parent.update()
         else:
-            resource = Resource(name=name, resource_type=resource_type)
-        self.database.save(resource)
-        self.information = MessageDialog("Resource added", icon=QtWidgets.QMessageBox.Information)
-        self.information.show()
-        self.close()
-        self.parent.update()
+            self.information = MessageDialog("Please fill in name.")
+            self.information.show()
 
 class ServiceDialog(QtWidgets.QDialog):
     def __init__(self, parent, service=None):
@@ -287,7 +295,7 @@ class ServiceDialog(QtWidgets.QDialog):
         layout.addRow(QtWidgets.QLabel('Name'), self.name)
         layout.addRow(QtWidgets.QLabel('Price'), self.price)
         layout.addRow(QtWidgets.QLabel('Duration (min)'), self.duration)
-        layout.addRow(QtWidgets.QLabel('Description'), self.description)
+        layout.addRow(QtWidgets.QLabel('Description (optional)'), self.description)
         self.form_group_box.setLayout(layout)
         
     def accept(self):
@@ -295,15 +303,20 @@ class ServiceDialog(QtWidgets.QDialog):
         price = self.price.value()
         duration = self.duration.value()
         description = self.description.toPlainText()
-        if self.service:
-            service = Service(ID=self.service.ID, name=name, price=price, duration=duration, description=description)
+        if name:
+            if self.service:
+                service = Service(ID=self.service.ID, name=name, price=price, duration=duration, description=description)
+            else:
+                service = Service(name=name, price=price, duration=duration, description=description)
+            self.database.save(service)
+            self.information = MessageDialog("Service added", icon=QtWidgets.QMessageBox.Information)
+            self.information.show()
+            self.close()
+            self.parent.update()
         else:
-            service = Service(name=name, price=price, duration=duration, description=description)
-        self.database.save(service)
-        self.information = MessageDialog("Service added", icon=QtWidgets.QMessageBox.Information)
-        self.information.show()
-        self.close()
-        self.parent.update()
+            self.information = MessageDialog("Please fill in name.")
+            self.information.show()
+
 
 class CustomerDialog(QtWidgets.QDialog):
     def __init__(self, parent, customer=None):
@@ -340,15 +353,19 @@ class CustomerDialog(QtWidgets.QDialog):
     def accept(self):
         name = self.name.text()
         email = self.email.text()
-        if self.customer:
-            customer = Customer(ID=self.customer.ID, name=name, email=email)
+        if name and email:
+            if self.customer:
+                customer = Customer(ID=self.customer.ID, name=name, email=email)
+            else:
+                customer = Customer(name=name, email=email)
+            self.database.save(customer)
+            self.information = MessageDialog("Customer added", icon=QtWidgets.QMessageBox.Information)
+            self.information.show()
+            self.close()
+            self.parent.update()
         else:
-            customer = Customer(name=name, email=email)
-        self.database.save(customer)
-        self.information = MessageDialog("Customer added", icon=QtWidgets.QMessageBox.Information, parent=self.parent)
-        self.information.show()
-        self.close()
-        self.parent.update()
+            self.information = MessageDialog("Please fill in name and email.")
+            self.information.show()
 
 class ResourceManageDialog(QtWidgets.QDialog):
     def __init__(self, parent):

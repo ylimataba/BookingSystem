@@ -23,7 +23,7 @@ class ServiceTable(Table):
 
     def get_all(self):
         services = []
-        self.cursor.execute('SELECT * FROM services')
+        self.cursor.execute('SELECT * FROM services ORDER BY name COLLATE NOCASE')
         rows = self.cursor.fetchall()
         for row in rows:
             services.append(Service(row=row))

@@ -23,6 +23,7 @@ class Reservation(Model):
         if row:
             self.ID = row[0]
             self.start = QtCore.QDateTime.fromString(row[3], 'yyyy-MM-dd hh:mm')
+            #self.end = self.start.addSecs(self.get_duration() * 60)
             self.end = QtCore.QDateTime.fromString(row[4], 'yyyy-MM-dd hh:mm')
         else:
             self.ID = ID
@@ -38,7 +39,7 @@ class Reservation(Model):
 
     def to_html(self):
         return "{0}<br>{1} - {2}".format(
-                self.resource.name,
+                self.customer.name,
                 self.start.toString('yyyy-MM-dd hh:mm'),
                 self.end.toString('yyyy-MM-dd hh:mm'))
 
@@ -58,6 +59,18 @@ class Reservation(Model):
     
     def get_duration_on_date(self, date):
         return self.get_end_time_on_date(date) - self.get_start_time_on_date(date)
+
+    def get_duration(self):
+        duration = 0
+        for service in self.services:
+            duration += service.duration
+        return duration
+
+    def get_price(self):
+        price = 0
+        for service in self.services:
+            price += service.price
+        return price
     
     def __str__(self):
         return "Reservation(ID: {0}, resourceID: {1}, start: {2}, end: {3})".format(

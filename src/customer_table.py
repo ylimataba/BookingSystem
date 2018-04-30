@@ -19,7 +19,7 @@ class CustomerTable(Table):
 
     def get_all(self):
         customers = []
-        self.cursor.execute('SELECT * FROM customers')
+        self.cursor.execute('SELECT * FROM customers ORDER BY name COLLATE NOCASE')
         rows = self.cursor.fetchall()
         for row in rows:
             customers.append(Customer(row=row))

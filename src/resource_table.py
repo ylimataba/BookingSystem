@@ -19,7 +19,7 @@ class ResourceTable(Table):
 
     def get_all(self):
         resources = []
-        self.cursor.execute('SELECT * FROM resources')
+        self.cursor.execute('SELECT * FROM resources ORDER BY name COLLATE NOCASE')
         rows = self.cursor.fetchall()
         for row in rows:
             resources.append(Resource(row=row))

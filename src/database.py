@@ -30,7 +30,8 @@ class Database:
                 customer = self.customers.get_by_id(row[1])
                 resource = self.resources.get_by_id(row[2])
                 rservices = self.get_services(reservationID=row[0])
-                reservations.append(Reservation(row=row, customer=customer, resource=resource, services=rservices))
+                reservation = Reservation(row=row, customer=customer, resource=resource, services=rservices)
+                reservations.append(reservation)
             return reservations
         except Exception as e:
             raise DatabaseError(str(e))
