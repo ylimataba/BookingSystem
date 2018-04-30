@@ -20,13 +20,15 @@ class ReservationDialog(QtWidgets.QDialog):
         if self.reservation:
             self.edit_off()
             self.init_reservation()
+        else:
+            self.edit_on = True
 
     def edit(self):
+        self.edit_on = True
         self.buttonBox.removeButton(self.edit_button)
-        self.service_buttons.setEnabled(True)
         self.resource_combo.setEnabled(True)
         self.customer_combo.setEnabled(True)
-        self.start.setEnabled(True)
+        self.start.setDisabled(False)
         self.new_customer_button.show()
 
     def delete(self):
@@ -37,47 +39,76 @@ class ReservationDialog(QtWidgets.QDialog):
         self.parent.update()
 
     def edit_off(self):
+        self.edit_on = False
         self.delete_button = QtWidgets.QPushButton("Delete")
         self.edit_button = QtWidgets.QPushButton("Edit")
         self.buttonBox.addButton(self.delete_button, 2)
         self.buttonBox.addButton(self.edit_button, 3)
         self.delete_button.clicked.connect(self.delete)
         self.edit_button.clicked.connect(self.edit)
-        self.service_buttons.setEnabled(False)
         self.resource_combo.setEnabled(False)
         self.customer_combo.setEnabled(False)
         self.start.setEnabled(False)
         self.new_customer_button.hide()
 
     def init_reservation(self):
-        self.service_buttons.check_services(self.reservation)
+        self.select_services(self.reservation)
         self.resource_combo.setCurrentIndex(self.resource_combo.findText(self.reservation.resource.name))
         self.customer_combo.setCurrentIndex(self.customer_combo.findText(self.reservation.customer.name))
         self.start.setDateTime(self.reservation.start)
         self.end.setDateTime(self.reservation.end)
 
+    def create_list_widget(self):
+        self.listWidget = QtWidgets.QListWidget()
+        self.listWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.listWidget.itemSelectionChanged.connect(self.update)
+        for service in self.database.get_services():
+            text = "{0} Price: {1} Duration: {2}".format(service.name, service.price, service.duration)
+            item = QtWidgets.QListWidgetItem(text)
+            item.setData(QtCore.Qt.UserRole, service)
+            self.listWidget.addItem(item)
+
+    def get_selected_services(self):
+        services = []
+        items = self.listWidget.selectedItems()
+        for item in items:
+            services.append(item.data(QtCore.Qt.UserRole))
+        return services
+
+    def get_price(self):
+        price = 0
+        for service in self.get_selected_services():
+            price += service.price
+        return price
+
+    def get_duration(self):
+        duration = 0
+        for service in self.get_selected_services():
+            duration += service.duration
+        return duration * 60
+
+    def select_services(self, reservation):
+        for i in range(self.listWidget.count()):
+            item = self.listWidget.item(i)
+            service = item.data(QtCore.Qt.UserRole)
+            if service in reservation.services:
+                item.setSelected(True)
+            else:
+                item.setSelected(False)
+
     def create_service_group_box(self):
         group_box = QtWidgets.QGroupBox()
         layout = QtWidgets.QGridLayout()
         layout.addWidget(QtWidgets.QLabel('Services'),0,0)
-        services = self.database.get_services()
-        self.service_buttons = ServiceButtonGroup(self.database)
-        self.service_buttons.setExclusive(False)
-        for i, service in enumerate(services):
-            text = "{0} Price: {1} Duration: {2}".format(service.name, service.price, service.duration)
-            button = QtWidgets.QCheckBox(text)
-            button.setToolTip(service.description)
-            layout.addWidget(button, i + 1, 1)
-            self.service_buttons.addButton(button, service.ID)
-        for button in self.service_buttons.buttons():
-            button.clicked.connect(self.update)
+        self.create_list_widget()
+        layout.addWidget(self.listWidget, 1,1,1,2)
         self.price = QtWidgets.QDoubleSpinBox()
-        value = self.service_buttons.get_price()
+        value = self.get_price()
         self.price.setMaximum(max(1000000.0, value))
         self.price.setValue(value)
         self.price.setEnabled(False)
-        layout.addWidget(QtWidgets.QLabel("Price"),len(services)+1,0)
-        layout.addWidget(self.price,len(services)+1,1)
+        layout.addWidget(QtWidgets.QLabel("Price"),2,0)
+        layout.addWidget(self.price,2,1)
         group_box.setLayout(layout)
         return group_box
 
@@ -140,7 +171,8 @@ class ReservationDialog(QtWidgets.QDialog):
         group_box = QtWidgets.QGroupBox()
         layout = QtWidgets.QGridLayout()
         self.start = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
-        self.end = QtWidgets.QDateTimeEdit(self.start.dateTime().addSecs(self.service_buttons.get_duration()))
+        #self.end = QtWidgets.QDateTimeEdit(self.start.dateTime().addSecs(self.service_buttons.get_duration()))
+        self.end = QtWidgets.QDateTimeEdit(self.start.dateTime().addSecs(self.get_duration()))
         self.start.setDisplayFormat("d.M.yyyy HH:mm")
         self.end.setDisplayFormat("d.M.yyyy HH:mm")
         self.start.setCalendarPopup(True)
@@ -167,8 +199,11 @@ class ReservationDialog(QtWidgets.QDialog):
         return group_box
 
     def update(self):
-        self.end.setDateTime(self.start.dateTime().addSecs(self.service_buttons.get_duration()))
-        value = self.service_buttons.get_price()
+        if not self.edit_on:
+            self.select_services(self.reservation)
+        duration = self.get_duration()
+        self.end.setDateTime(self.start.dateTime().addSecs(duration))
+        value = self.get_price()
         self.price.setMaximum(max(1000000.0, value))
         self.price.setValue(value)
         self.add_free_resources()
@@ -176,7 +211,10 @@ class ReservationDialog(QtWidgets.QDialog):
     def accept(self):
         customer = self.customer_combo.currentData()
         resource = self.resource_combo.currentData()
-        services = self.service_buttons.get_checked_services()
+        #services = self.service_buttons.get_checked_services()
+        services = self.get_selected_services()
+        for service in services:
+            print(service)
         start = self.start.dateTime()
         end = self.end.dateTime()
         if self.new_customer_button.isChecked():
