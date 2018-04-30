@@ -70,7 +70,10 @@ class ReservationDialog(QtWidgets.QDialog):
             self.service_buttons.addButton(button, service.ID)
         for button in self.service_buttons.buttons():
             button.clicked.connect(self.update)
-        self.price = QtWidgets.QLineEdit(str(self.service_buttons.get_price()))
+        self.price = QtWidgets.QDoubleSpinBox()
+        value = self.service_buttons.get_price()
+        self.price.setMaximum(max(1000000.0, value))
+        self.price.setValue(value)
         self.price.setEnabled(False)
         layout.addWidget(QtWidgets.QLabel("Price"),len(services)+1,0)
         layout.addWidget(self.price,len(services)+1,1)
@@ -164,7 +167,9 @@ class ReservationDialog(QtWidgets.QDialog):
 
     def update(self):
         self.end.setDateTime(self.start.dateTime().addSecs(self.service_buttons.get_duration()))
-        self.price.setText(str(self.service_buttons.get_price()))
+        value = self.service_buttons.get_price()
+        self.price.setMaximum(max(1000000.0, value))
+        self.price.setValue(value)
         self.add_free_resources()
         
     def accept(self):
@@ -264,8 +269,8 @@ class ServiceDialog(QtWidgets.QDialog):
     def init_service(self):
         if self.service:
             self.name.setText(self.service.name)
-            self.price.setText(str(self.service.price))
-            self.duration.setText(str(self.service.duration))
+            self.price.setValue(self.service.price)
+            self.duration.setValue(self.service.duration)
             self.description.setText(self.service.description)
 
     def create_form_group_box(self):
@@ -273,8 +278,10 @@ class ServiceDialog(QtWidgets.QDialog):
         layout = QtWidgets.QFormLayout()
         
         self.name = QtWidgets.QLineEdit()
-        self.price = QtWidgets.QLineEdit()
-        self.duration = QtWidgets.QLineEdit()
+        self.price = QtWidgets.QDoubleSpinBox()
+        self.price.setMaximum(1000000)
+        self.duration = QtWidgets.QDoubleSpinBox()
+        self.duration.setRange(15, 1000000)
         self.description = QtWidgets.QTextEdit()
 
         layout.addRow(QtWidgets.QLabel('Name'), self.name)
@@ -285,8 +292,8 @@ class ServiceDialog(QtWidgets.QDialog):
         
     def accept(self):
         name = self.name.text()
-        price = float(self.price.text())
-        duration = float(self.duration.text())
+        price = self.price.value()
+        duration = self.duration.value()
         description = self.description.toPlainText()
         if self.service:
             service = Service(ID=self.service.ID, name=name, price=price, duration=duration, description=description)
