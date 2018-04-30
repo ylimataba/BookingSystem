@@ -1,18 +1,18 @@
 # Varausjärjestelmä
 
-## Mitä ominaisuuksia olet jo toteuttanut projektiisi?
-* Varausten lisäys
-* Resurssien lisäys
-* Varausten katselu valittuna päivänä
+## Esittely
+Kuvitteelliselle yritykselle toteutettu varausjärjestelmä, joka yhdistää kalenteri- asiakas-, palvelu- ja resurssitietoja. Ohjelmaa käytetään graafisen käyttöliittymän kautta. Ohjelmaan liitetään tiedot yrityksen käytössä olevista resursseista sekä yrityksen tarjoamista palveluista. Käyttäjä voi muokata näitä tietoja vastaamaan yrityksen kulloistakin tilannetta.
+Varausta tehdessä ohjelma tallentaa tiedot tehdyistä varauksista kalenteriin ja merkitsee valitut resurssit varatuiksi, jolloin konfliktitilanteessa (resurssi on jo varattu) varausta ei voida toteuttaa. Varaukseen ohjelma liittää tarvittavat tiedot asiakkaasta sekä asiakkaan valitsemat palvelut.
+
+## Tiedosto- ja kansiorakenne
+
+  - ohjelmakoodi löytyy src kansiosta
+  - dokumentit löytyy doc kansiosta
+
+## Asennusohje
+
+    - ohjelma käyttää PyQt5
 
 ## Käyttöohje
-* Ohjelman voi ajaa komennolla `python main.py`
-* Ohjelmalla voi lisätä resursseja ja varauksia sekä katsella tehtyjä varauksia
 
-## Aikataulu
-* Olen käyttänyt tähän mennessä noin 60 tuntia
-* En ole saanut ihan niin paljon tehtyä kuin olisin halunnut. Muutoksia on aiheuttanut gui:n kanssa säätäminen. PyQt ei ole entuudestaan tuttu joten paljon aikaa menee hukkaan yrityksen ja erehdysten kanssa.
-* Uskon kuitenkin, että gui:n työstäminen on nopeampaa projektin edetessä.
-
-## Muuta
-* En ole joutunut suurempia muutoksia tekemään suunnitelmaan. Muutamia ohjelmakoodin rakenteellisia muutoksia olen tehnyt koska olen kokenut, että luokkajako on parempi näin.
+  - ohjelma ajetaan python main.py komennolla
