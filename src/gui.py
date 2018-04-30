@@ -3,7 +3,7 @@ from models import Reservation, Resource
 from reservation_graphics_item import ReservationGraphicsItem
 from hour_row_graphics_item import HourRowGraphicsItem
 from column_header_graphics_item import ColumnHeaderGraphicsItem
-from dialogs import ReservationDialog, ResourceDialog, ServiceDialog, MessageDialog, ResourceManageDialog, ServiceManageDialog, CustomerManageDialog
+from dialogs import ReservationDialog, ResourceDialog, ServiceDialog, MessageDialog, ResourceManageDialog, ServiceManageDialog, CustomerManageDialog, ReservationManageDialog
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -33,6 +33,10 @@ class GUI(QtWidgets.QMainWindow):
         self.reservation = QtWidgets.QPushButton("Add reservation")
         self.reservation.clicked.connect(self.add_reservation)
         layout.addWidget(self.reservation)
+
+        self.reservation_manage = QtWidgets.QPushButton("Manage reservations")
+        self.reservation_manage.clicked.connect(self.manage_reservations)
+        layout.addWidget(self.reservation_manage)
 
         self.resource_manage = QtWidgets.QPushButton("Manage resources")
         self.resource_manage.clicked.connect(self.manage_resources)
@@ -113,6 +117,10 @@ class GUI(QtWidgets.QMainWindow):
         else:
             self.reservation_dialog = ReservationDialog(self, reservation=reservation)
             self.reservation_dialog.show()
+
+    def manage_reservations(self):
+        self.reservation_manage_dialog = ReservationManageDialog(self)
+        self.reservation_manage_dialog.show()
 
     def manage_resources(self):
         self.resource_manage_dialog = ResourceManageDialog(self)

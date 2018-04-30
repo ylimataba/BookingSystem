@@ -11,6 +11,27 @@ class TestDatabase(unittest.TestCase):
         self.db = Database('test.db')
         self.db.reset()
 
+    def test_reservations_by_customer(self):
+        customer = Customer(name='Teemu Teekkari', email='teemu.teekkari@aalto fi')
+        service1 = Service(name='service1',price=10.0,duration=60.0,description='service1 description')
+        service2 = Service(name='service1',price=10.0,duration=60.0,description='service1 description')
+        self.db.save(service1)
+        self.db.save(service2)
+        added_reservations = []
+        date = QtCore.QDate.currentDate()
+        resource = Resource(name="Resource1", resource_type="ROOM")
+        for x in range(8,19):
+            start_time = QtCore.QTime(x,0)
+            end_time = QtCore.QTime(x,59)
+            start = QtCore.QDateTime(date,start_time)
+            end = QtCore.QDateTime(date, end_time)
+            new_reservation = Reservation(customer=customer, resource=resource, start=start, end=end, services=[service1,service2])
+            self.db.save(new_reservation)
+            added_reservations.append(new_reservation)
+        reservations = self.db.get_reservations(customer=customer)
+        for i in range(len(reservations)):
+            self.assertEqual(reservations[i], added_reservations[i])
+
     def test_get_customers(self):
         customer1 = Customer(name="Teemu Teekkari", email="teemu.teekkari@aalto.fi")
         customer2 = Customer(name="Tiina Teekkari", email="tiina.teekkari@aalto.fi")

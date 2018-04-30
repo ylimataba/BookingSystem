@@ -27,14 +27,40 @@ class ReservationTable(Table):
         return False
 
     def get_all(self):
-        self.cursor.execute('SELECT * FROM reservations')
+        self.cursor.execute('SELECT * FROM reservations ORDER BY start COLLATE NOCASE')
         rows = self.cursor.fetchall()
         return rows
 
     def get_by_date(self, date):
-        self.cursor.execute('SELECT * FROM reservations WHERE ? BETWEEN date(start) and date(end) ORDER BY start', (date,))
+        self.cursor.execute('SELECT * FROM reservations WHERE ? BETWEEN date(start) and date(end) ORDER BY start COLLATE NOCASE', (date,))
         rows = self.cursor.fetchall()
         return rows
+
+    def get_by_dates(self, start, end):
+        self.cursor.execute('''SELECT * FROM reservations
+                WHERE start BETWEEN ? AND ?
+                OR end BETWEEN ? AND ?
+                OR (start <= ? AND end >= ?)
+                ORDER BY start COLLATE NOCASE''',
+                (start,end,start,end,start,end))
+        rows = self.cursor.fetchall()
+        return rows
+
+    def get_by_customer(self, customer):
+        self.cursor.execute('SELECT * FROM reservations WHERE customer=? ORDER BY start COLLATE NOCASE', (customer.ID,))
+        rows = self.cursor.fetchall()
+        return rows
+    
+    def get_by_dates_and_customer(self, start, end, customer):
+        self.cursor.execute('''SELECT * FROM reservations
+                WHERE customer=? 
+                AND (start BETWEEN ? AND ?
+                OR end BETWEEN ? AND ?)
+                OR (customer=? AND start <= ? AND end >= ?)''',
+                (customer.ID,start,end,start,end,customer.ID,start,end))
+        rows = self.cursor.fetchall()
+        return rows
+
 
     def is_free(self, resourceID, start, end, reservationID=None):
         self.cursor.execute('''SELECT * FROM reservations

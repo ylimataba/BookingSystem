@@ -171,7 +171,6 @@ class ReservationDialog(QtWidgets.QDialog):
         group_box = QtWidgets.QGroupBox()
         layout = QtWidgets.QGridLayout()
         self.start = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
-        #self.end = QtWidgets.QDateTimeEdit(self.start.dateTime().addSecs(self.service_buttons.get_duration()))
         self.end = QtWidgets.QDateTimeEdit(self.start.dateTime().addSecs(self.get_duration()))
         self.start.setDisplayFormat("d.M.yyyy HH:mm")
         self.end.setDisplayFormat("d.M.yyyy HH:mm")
@@ -211,7 +210,6 @@ class ReservationDialog(QtWidgets.QDialog):
     def accept(self):
         customer = self.customer_combo.currentData()
         resource = self.resource_combo.currentData()
-        #services = self.service_buttons.get_checked_services()
         services = self.get_selected_services()
         for service in services:
             print(service)
@@ -566,6 +564,98 @@ class CustomerManageDialog(QtWidgets.QDialog):
         self.customerDialog = CustomerDialog(self.parent)
         self.customerDialog.show()
         self.close()
+
+class ReservationManageDialog(QtWidgets.QDialog):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.parent = parent
+        self.database = parent.database
+        self.layout = QtWidgets.QVBoxLayout()
+
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
+        buttonBox.accepted.connect(self.accept)
+        delete_button = QtWidgets.QPushButton("Delete")
+        edit_button = QtWidgets.QPushButton("Edit")
+        buttonBox.addButton(delete_button, 2)
+        buttonBox.addButton(edit_button, 3)
+        delete_button.clicked.connect(self.delete)
+        edit_button.clicked.connect(self.edit)
+
+        self.listWidget = QtWidgets.QListWidget()
+        self.create_date_time_group_box()
+        self.create_search_group()
+        self.layout.addWidget(self.search_group)
+        self.layout.addWidget(self.date_time_group)
+        self.layout.addWidget(self.listWidget)
+        self.layout.addWidget(buttonBox)
+        self.setLayout(self.layout)
+
+    def create_search_group(self):
+        self.search_group = QtWidgets.QGroupBox()
+        layout = QtWidgets.QVBoxLayout()
+        self.customer_combo = QtWidgets.QComboBox()
+        self.customer_combo.currentIndexChanged.connect(self.search)
+        customers = self.database.get_customers()
+        self.customer_combo.addItem("All", None)
+        for customer in customers:
+            self.customer_combo.addItem(customer.name, customer)
+        layout.addWidget(self.customer_combo)
+        self.search_group.setLayout(layout)
+
+    def create_date_time_group_box(self):
+        self.date_time_group = QtWidgets.QGroupBox()
+        layout = QtWidgets.QGridLayout()
+        self.start = QtWidgets.QDateTimeEdit(QtCore.QDateTime.currentDateTime())
+        self.end = QtWidgets.QDateTimeEdit(self.start.dateTime().addMonths(1))
+        self.start.setDisplayFormat("d.M.yyyy HH:mm")
+        self.end.setDisplayFormat("d.M.yyyy HH:mm")
+        self.start.setCalendarPopup(True)
+        self.end.setCalendarPopup(True)
+        self.start.dateTimeChanged.connect(self.search)
+        self.end.dateTimeChanged.connect(self.search)
+        layout.addWidget(QtWidgets.QLabel('From'),0,0)
+        layout.addWidget(self.start,0,1)
+        layout.addWidget(QtWidgets.QLabel('To'),1,0)
+        layout.addWidget(self.end,1,1)
+        self.date_time_group.setLayout(layout)
+
+    def create_list_widget(self, reservations=None):
+        if reservations is None:
+            reservations = self.database.get_reservations()
+        for reservation in reservations:
+            start = reservation.start.toString("yyyy-MM-dd hh:mm")
+            end = reservation.end.toString("yyyy-MM-dd hh:mm")
+            text = "{0} Price:{1} Duration:{2}".format(start, reservation.get_price(), reservation.get_duration())
+            item = QtWidgets.QListWidgetItem(text)
+            item.setData(QtCore.Qt.UserRole, reservation)
+            self.listWidget.addItem(item)
+
+    def edit(self):
+        item = self.listWidget.currentItem()
+        start = self.start.dateTime()
+        end = self.end.dateTime()
+        if item:
+            reservation = item.data(QtCore.Qt.UserRole)
+            self.reservationDialog = ReservationDialog(self.parent, reservation=reservation)
+            self.reservationDialog.show()
+            self.close()
+
+    def delete(self):
+        item = self.listWidget.takeItem(self.listWidget.currentRow())
+        if item:
+            reservation = item.data(QtCore.Qt.UserRole)
+            self.database.delete(reservation)
+            item = None
+            self.information = MessageDialog("Reservation deleted.", icon=QtWidgets.QMessageBox.Information)
+            self.information.show()
+            self.parent.update()
+
+    def search(self):
+        customer = self.customer_combo.currentData()
+        start = self.start.dateTime()
+        end = self.end.dateTime()
+        self.listWidget.clear()
+        self.create_list_widget(reservations=self.database.get_reservations(customer=customer, start=start, end=end))
 
 class MessageDialog(QtWidgets.QMessageBox):
     def __init__(self, text, icon=QtWidgets.QMessageBox.Warning):

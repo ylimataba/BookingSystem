@@ -19,11 +19,17 @@ class Database:
         except Exception as e:
             raise DatabaseError(str(e))
 
-    def get_reservations(self, date=None):
+    def get_reservations(self, date=None, customer=None, start=None, end=None):
         try:
             reservations = []
             if date:
                 reservation_rows = self.reservations.get_by_date(date.toString('yyyy-MM-dd'))
+            elif start and end and customer:
+                reservation_rows = self.reservations.get_by_dates_and_customer(start.toString('yyyy-MM-dd hh:mm'), end.toString('yyyy-MM-dd hh:mm'), customer)
+            elif start and end:
+                reservation_rows = self.reservations.get_by_dates(start.toString('yyyy-MM-dd hh:mm'), end.toString('yyyy-MM-dd hh:mm'))
+            elif customer:
+                reservation_rows = self.reservations.get_by_customer(customer)
             else:
                 reservation_rows = self.reservations.get_all()
             for row in reservation_rows:
