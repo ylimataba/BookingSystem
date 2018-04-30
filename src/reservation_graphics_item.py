@@ -11,7 +11,7 @@ class ReservationGraphicsItem(QtWidgets.QGraphicsItem):
         self.height = height
         self.offset = offset
         self.reservation = reservation
-        self.x = self.reservation.resource.ID - 1
+        self.x = self.database.get_resources().index(self.reservation.resource)
         self.y = self.reservation.get_start_time_on_date(date) - first
         self.duration = self.reservation.get_duration_on_date(date)
         self.init_rect()

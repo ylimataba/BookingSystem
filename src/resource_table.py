@@ -30,18 +30,6 @@ class ResourceTable(Table):
         resource = Resource(row=self.cursor.fetchone())
         return resource
 
-    def is_free(self, resourceID, start, end):
-        self.cursor.execute('''SELECT resource FROM reservations
-                WHERE resource=? 
-                AND (start BETWEEN ? AND ?
-                OR end BETWEEN ? AND ?)
-                OR (resource=? AND start <= ? AND end >= ?)''',
-                (resourceID,start,end,start,end,resourceID,start,end))
-        rows = self.cursor.fetchall()
-        if len(rows) > 0:
-            return False
-        return True
-
     def delete(self, resource):
         self.cursor.execute('DELETE FROM resources WHERE resourceID=?', (resource.ID,))
         self.connection.commit()

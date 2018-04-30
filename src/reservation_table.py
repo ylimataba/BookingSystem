@@ -15,7 +15,7 @@ class ReservationTable(Table):
         self.connection.commit()
         
     def save(self, reservation):
-        if self.is_free(reservation):
+        if self.is_free(reservation.resource.ID,reservation.start.toString('yyyy-MM-dd hh:mm'),reservation.end.toString('yyyy-MM-dd hh:mm'),reservationID=reservation.ID):
             if reservation.ID:
                 self.cursor.execute('UPDATE reservations SET customer=?, resource=?, start=?, end=? WHERE reservationID=?', reservation.get_data())
                 self.connection.commit()
@@ -36,19 +36,17 @@ class ReservationTable(Table):
         rows = self.cursor.fetchall()
         return rows
 
-    def is_free(self, reservation):
-        start = reservation.start.toString('yyyy-MM-dd hh:mm')
-        end = reservation.end.toString('yyyy-MM-dd hh:mm')
-        self.cursor.execute('''SELECT resource FROM reservations
+    def is_free(self, resourceID, start, end, reservationID=None):
+        self.cursor.execute('''SELECT * FROM reservations
                 WHERE resource=? 
                 AND (start BETWEEN ? AND ?
                 OR end BETWEEN ? AND ?)
                 OR (resource=? AND start <= ? AND end >= ?)''',
-                (reservation.resource.ID,start,end,start,end,reservation.resource.ID,start,end))
+                (resourceID,start,end,start,end,resourceID,start,end))
         rows = self.cursor.fetchall()
-        if reservation.ID:
+        if reservationID:
             if len(rows) == 1:
-                if rows[0][0] == reservation.ID:
+                if rows[0][0] == reservationID:
                     return True
         if len(rows) > 0:
             return False

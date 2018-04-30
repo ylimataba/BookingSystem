@@ -3,7 +3,7 @@ from models import Reservation, Resource
 from reservation_graphics_item import ReservationGraphicsItem
 from hour_row_graphics_item import HourRowGraphicsItem
 from column_header_graphics_item import ColumnHeaderGraphicsItem
-from dialogs import ReservationDialog, ResourceDialog, ServiceDialog, CustomerDialog
+from dialogs import ReservationDialog, ResourceDialog, ServiceDialog, MessageDialog, ResourceManageDialog, ServiceManageDialog, CustomerManageDialog
 
 class GUI(QtWidgets.QMainWindow):
     '''
@@ -34,24 +34,24 @@ class GUI(QtWidgets.QMainWindow):
         self.reservation.clicked.connect(self.add_reservation)
         layout.addWidget(self.reservation)
 
-        self.resource = QtWidgets.QPushButton("Add resource")
-        self.resource.clicked.connect(self.add_resource)
-        layout.addWidget(self.resource)
+        self.resource_manage = QtWidgets.QPushButton("Manage resources")
+        self.resource_manage.clicked.connect(self.manage_resources)
+        layout.addWidget(self.resource_manage)
 
-        self.service = QtWidgets.QPushButton("Add service")
-        self.service.clicked.connect(self.add_service)
-        layout.addWidget(self.service)
+        self.service_manage = QtWidgets.QPushButton("Manage services")
+        self.service_manage.clicked.connect(self.manage_services)
+        layout.addWidget(self.service_manage)
 
-        self.customer = QtWidgets.QPushButton("Add customer")
-        self.customer.clicked.connect(self.add_customer)
-        layout.addWidget(self.customer)
+        self.customer_manage = QtWidgets.QPushButton("Manage customers")
+        self.customer_manage.clicked.connect(self.manage_customers)
+        layout.addWidget(self.customer_manage)
 
         self.calendar = MyCalendar(self.database)
-        self.calendar.setMaximumWidth(self.screen.width() * 0.2)
         self.calendar.selectionChanged.connect(self.add_reservation_view)
         layout.addWidget(self.calendar)
 
-        layout.setAlignment(QtCore.Qt.AlignTop)
+        layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignRight)
+        self.buttons.setMaximumWidth(self.screen.width() * 0.2)
 
         self.horizontal.addWidget(self.buttons)
 
@@ -59,8 +59,7 @@ class GUI(QtWidgets.QMainWindow):
         '''
         Sets up the window.
         '''
-        screen = QtWidgets.QDesktopWidget().screenGeometry()
-        #self.setGeometry(screen)
+        self.setGeometry(self.screen)
         self.setWindowTitle('Varausjärjestelmä')
         self.show()
 
@@ -69,7 +68,7 @@ class GUI(QtWidgets.QMainWindow):
 
         # Add a view for showing the scene
         self.view = MyView(self.scene, self)
-        self.view.adjustSize()
+        self.view.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.view.show()
         self.horizontal.addWidget(self.view)
 
@@ -83,40 +82,49 @@ class GUI(QtWidgets.QMainWindow):
         date = self.calendar.selectedDate()
         reservations = self.database.get_reservations(date=date)
         if reservations:
+            self.view.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
             (start, end) = self.database.get_start_and_end(date)
             number_of_lines = end - start
             resources = self.database.resources.get_all()
             offset = 30
-            width = (self.screen.width() - offset) / min(5, max(len(resources),1))
+            width = (self.screen.width() - offset) / 5
             height = self.screen.height() / 12
             hours = HourRowGraphicsItem(offset-15, height * number_of_lines, offset, start, end)
-            headers = ColumnHeaderGraphicsItem(self.screen.width(), offset-5, resources, offset)
-            self.draw_hour_lines(self.screen.width(), height, offset, number_of_lines)
+            headers = ColumnHeaderGraphicsItem(width*len(resources), offset-5, resources, offset)
+            self.draw_hour_lines(width*len(resources)+30, height, offset, number_of_lines)
             for reservation in reservations:
                 item = ReservationGraphicsItem(self, self.database, reservation, width, height, offset, date, start)
                 self.scene.addItem(item)
             self.scene.addItem(hours)
             self.scene.addItem(headers)
         else:
+            self.view.setAlignment(QtCore.Qt.AlignCenter)
             text = QtWidgets.QGraphicsSimpleTextItem("No reservations for selected date")
             self.scene.addItem(text)
         self.scene.setSceneRect(self.scene.itemsBoundingRect())
 
     def add_reservation(self, reservation=None):
-        self.reservation_dialog = ReservationDialog(self, reservation=reservation)
-        self.reservation_dialog.show()
+        if not self.database.get_resources():
+            self.error = MessageDialog("Please add atleast one resource.")
+            self.error.show()
+        elif not self.database.get_services():
+            self.error = MessageDialog("Please add atleast one service.")
+            self.error.show()
+        else:
+            self.reservation_dialog = ReservationDialog(self, reservation=reservation)
+            self.reservation_dialog.show()
 
-    def add_resource(self):
-        self.resource_dialog = ResourceDialog(self)
-        self.resource_dialog.show()
+    def manage_resources(self):
+        self.resource_manage_dialog = ResourceManageDialog(self)
+        self.resource_manage_dialog.show()
 
-    def add_service(self):
-        self.service_dialog = ServiceDialog(self)
-        self.service_dialog.show()
+    def manage_services(self):
+        self.service_manage_dialog = ServiceManageDialog(self)
+        self.service_manage_dialog.show()
 
-    def add_customer(self):
-        self.customer_dialog = CustomerDialog(self)
-        self.customer_dialog.show()
+    def manage_customers(self):
+        self.customer_manage_dialog = CustomerManageDialog(self)
+        self.customer_manage_dialog.show()
 
     def update(self):
         self.add_reservation_view()
@@ -125,7 +133,7 @@ class MyView(QtWidgets.QGraphicsView):
     def __init__(self, scene, parent):
         super().__init__(scene, parent)
         self.scene = scene
-        self.setMinimumWidth(0.5*parent.screen.width())
+        #self.setMaximumWidth(0.8*parent.screen.width())
    
     def scrollContentsBy(self, dx, dy):
         super().scrollContentsBy(dx, dy)
