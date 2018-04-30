@@ -578,38 +578,4 @@ class MessageDialog(QtWidgets.QMessageBox):
         self.parent.activateWindow()
         super().accept()
 
-class ServiceButtonGroup(QtWidgets.QButtonGroup):
-    def __init__(self, database):
-        super().__init__()
-        self.database = database
-
-    def get_checked_services(self):
-        services = []
-        for button in self.buttons():
-            if button.isChecked():
-                service = self.database.get_services(ID=self.id(button))
-                services.append(service)
-        return services
-
-    def get_duration(self):
-        duration = 0
-        services = self.get_checked_services()
-        for service in services:
-            duration += service.duration * 60
-        return duration
-
-    def get_price(self):
-        price = 0
-        services = self.get_checked_services()
-        for service in services:
-            price += service.price
-        return price
-
-    def check_services(self, reservation):
-        for service in reservation.services:
-            self.button(service.ID).setChecked(True)
-
-    def setEnabled(self, value):
-        for button in self.buttons():
-            button.setEnabled(value)
 
